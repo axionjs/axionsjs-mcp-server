@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": [
+    "mcp/**/*",
+    "lib/types.ts",
+    "lib/registry-api.ts",
+    "lib/component-generator.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "dist",
+    "app/**/*",
+    "components/**/*",
+    "lib/utils.ts"
+  ]
+}

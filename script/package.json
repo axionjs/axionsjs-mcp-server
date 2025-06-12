@@ -1,0 +1,7 @@
+{
+  "name": "axionsjs-mcp-scripts",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "../scripts/build-mcp.sh"
+  }
+}
