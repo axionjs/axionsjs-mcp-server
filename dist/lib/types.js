@@ -76,7 +76,11 @@ export const axionsRegistryItemSchema = z.object({
     version: z.string().optional(),
     tags: z.array(z.string()).optional(),
 });
-export const axionsRegistryIndexSchema = z.array(axionsRegistryItemSchema);
+export const axionsRegistryIndexSchema = z.object({
+    name: z.string(),
+    homepage: z.string(),
+    items: z.array(axionsRegistryItemSchema),
+});
 export const axionsStylesSchema = z.array(z.object({
     name: z.string(),
     label: z.string(),

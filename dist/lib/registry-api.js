@@ -17,7 +17,7 @@ const REGISTRY_TYPES = [
 ];
 export async function getAxionsRegistryIndex() {
     try {
-        const response = await fetch(`${AXIONS_REGISTRY_URL}/r/index.json`);
+        const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
         if (!response.ok) {
             throw new Error(`Failed to fetch registry index: ${response.statusText}`);
         }
@@ -71,10 +71,10 @@ export async function getAxionsRegistryThemes() {
 }
 export async function getAxionsRegistryDynamicComponents() {
     try {
-        const response = await fetch(`${AXIONS_REGISTRY_URL}/r/dynamic-components/index.json`);
+        const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
         if (!response.ok) {
             // Try alternative path
-            const altResponse = await fetch(`${AXIONS_REGISTRY_URL}/r/registry-dynamic-components.json`);
+            const altResponse = await fetch(`${AXIONS_REGISTRY_URL}/r/styles/new-york/index.json`);
             if (!altResponse.ok) {
                 throw new Error(`Failed to fetch dynamic components: ${response.statusText}`);
             }
@@ -115,15 +115,15 @@ export async function getAxionsComponentsByCategory(category) {
     if (!index)
         return [];
     if (!category)
-        return index;
-    return index.filter((item) => item.categories?.includes(category) || item.type.includes(category));
+        return index.items;
+    return index.items.filter((item) => item.categories?.includes(category) || item.type.includes(category));
 }
 export async function searchAxionsComponents(query) {
     const index = await getAxionsRegistryIndex();
     if (!index)
         return [];
     const searchTerm = query.toLowerCase();
-    return index.filter((item) => item.name.toLowerCase().includes(searchTerm) ||
+    return index.items.filter((item) => item.name.toLowerCase().includes(searchTerm) ||
         item.description?.toLowerCase().includes(searchTerm) ||
         item.tags?.some((tag) => tag.toLowerCase().includes(searchTerm)));
 }

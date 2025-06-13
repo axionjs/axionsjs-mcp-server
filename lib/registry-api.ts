@@ -35,7 +35,7 @@ export async function getAxionsRegistryIndex(): Promise<z.infer<
   typeof axionsRegistryIndexSchema
 > | null> {
   try {
-    const response = await fetch(`${AXIONS_REGISTRY_URL}/r/index.json`);
+    const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
     if (!response.ok) {
       throw new Error(`Failed to fetch registry index: ${response.statusText}`);
     }
@@ -90,18 +90,15 @@ export async function getAxionsRegistryThemes(): Promise<AxionsRegistryItem[]> {
     return [];
   }
 }
-
 export async function getAxionsRegistryDynamicComponents(): Promise<
   AxionsRegistryItem[]
 > {
   try {
-    const response = await fetch(
-      `${AXIONS_REGISTRY_URL}/r/dynamic-components/index.json`
-    );
+    const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
     if (!response.ok) {
       // Try alternative path
       const altResponse = await fetch(
-        `${AXIONS_REGISTRY_URL}/r/registry-dynamic-components.json`
+        `${AXIONS_REGISTRY_URL}/r/styles/new-york/index.json`
       );
       if (!altResponse.ok) {
         throw new Error(
@@ -151,9 +148,9 @@ export async function getAxionsComponentsByCategory(
   const index = await getAxionsRegistryIndex();
   if (!index) return [];
 
-  if (!category) return index;
+  if (!category) return index.items;
 
-  return index.filter(
+  return index.items.filter(
     (item: AxionsRegistryItem) =>
       item.categories?.includes(category) || item.type.includes(category)
   );
@@ -166,7 +163,7 @@ export async function searchAxionsComponents(
   if (!index) return [];
 
   const searchTerm = query.toLowerCase();
-  return index.filter(
+  return index.items.filter(
     (item: AxionsRegistryItem) =>
       item.name.toLowerCase().includes(searchTerm) ||
       item.description?.toLowerCase().includes(searchTerm) ||

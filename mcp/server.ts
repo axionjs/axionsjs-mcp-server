@@ -58,6 +58,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         ),
       },
       {
+        name: "get_items",
+        description: "Get items from the AxionsJS registry",
+        inputSchema: zodToJsonSchema(z.object({})),
+      },
+      {
         name: "get_component_list",
         description: "Get list of all available AxionsJS components",
         inputSchema: zodToJsonSchema(
@@ -275,19 +280,68 @@ npx axionjs init --style ${style}
         };
       }
 
+      case "get_items": {
+        let registryIndex = await getAxionsRegistryIndex();
+        if (!registryIndex) {
+          return {
+            content: [{ type: "text", text: "Failed to fetch items" }],
+          };
+        }
+
+        // All items
+        let items = registryIndex.items;
+
+        // Example: If you want to list all themes
+        const themes = items.filter((item) => item.type === "registry:theme");
+
+        let text = "";
+
+        if (themes.length > 0) {
+          text += `**Available Themes:**\n`;
+          text +=
+            themes
+              .map(
+                (theme) =>
+                  `- ${theme.name}${theme.label ? ` (${theme.label})` : ""}`
+              )
+              .join("\n") + "\n\n";
+        }
+
+        // You can add similar blocks for other types, e.g. blocks, ui, etc.
+
+        // If you want to list all items regardless of type:
+        text += `**All Registry Items:**\n`;
+        text += items.map((item) => `- ${item.name} [${item.type}]`).join("\n");
+
+        return {
+          content: [
+            {
+              type: "text",
+              text,
+            },
+          ],
+        };
+      }
       case "get_component_list": {
         const { category, type, registryType } = request.params
           .arguments as any;
 
-        let components = await getAxionsRegistryIndex();
-        if (!components) {
+        let registryIndex = await getAxionsRegistryIndex();
+        if (!registryIndex) {
           return {
             content: [{ type: "text", text: "Failed to fetch component list" }],
           };
         }
 
+        // Always start with the items array
+        let components = registryIndex.items;
+
         if (category) {
-          components = await getAxionsComponentsByCategory(category);
+          components = components.filter(
+            (comp: any) =>
+              comp.categories?.includes(category) ||
+              comp.type.includes(category)
+          );
         }
 
         if (type) {

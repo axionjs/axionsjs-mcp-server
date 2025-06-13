@@ -4,7 +4,8 @@ const nextConfig = {
     serverComponentsExternalPackages: ["@modelcontextprotocol/sdk"],
   },
   env: {
-    AXIONS_REGISTRY_URL: process.env.AXIONS_REGISTRY_URL || "http://localhost:3000",
+    AXIONS_REGISTRY_URL:
+      process.env.AXIONS_REGISTRY_URL || "http://localhost:3000",
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -15,6 +16,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+};
 
-module.exports = nextConfig
+export default nextConfig;
