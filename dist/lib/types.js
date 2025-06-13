@@ -1,4 +1,5 @@
 import { z } from "zod";
+// Define schemas
 export const axionsRegistryItemTypeSchema = z.enum([
     "registry:lib",
     "registry:block",
@@ -11,6 +12,15 @@ export const axionsRegistryItemTypeSchema = z.enum([
     "registry:style",
     "registry:example",
     "registry:internal",
+    "registry:auth",
+    "registry:chart",
+    "registry:dynamic-component",
+    "registry:icon",
+    "registry:actions",
+    "registry:api",
+    "registry:email",
+    "registry:middleware",
+    "registry:schemas",
 ]);
 export const axionsRegistryItemFileSchema = z.discriminatedUnion("type", [
     z.object({
@@ -49,6 +59,7 @@ export const axionsRegistryItemSchema = z.object({
     name: z.string(),
     type: axionsRegistryItemTypeSchema,
     title: z.string().optional(),
+    label: z.string().optional(),
     author: z.string().min(2).optional(),
     description: z.string().optional(),
     dependencies: z.array(z.string()).optional(),
@@ -57,6 +68,8 @@ export const axionsRegistryItemSchema = z.object({
     files: z.array(axionsRegistryItemFileSchema).optional(),
     tailwind: axionsRegistryItemTailwindSchema.optional(),
     cssVars: axionsRegistryItemCssVarsSchema.optional(),
+    cssVarsV4: axionsRegistryItemCssVarsSchema.optional(),
+    activeColor: z.record(z.string(), z.string()).optional(),
     meta: z.record(z.string(), z.any()).optional(),
     docs: z.string().optional(),
     categories: z.array(z.string()).optional(),

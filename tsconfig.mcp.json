@@ -20,14 +20,8 @@
     "mcp/**/*",
     "lib/types.ts",
     "lib/registry-api.ts",
-    "lib/component-generator.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    ".next",
-    "dist",
-    "app/**/*",
-    "components/**/*",
+    "lib/component-generator.ts",
     "lib/utils.ts"
-  ]
+  ],
+  "exclude": ["node_modules", ".next", "dist", "app/**/*", "components/**/*"]
 }

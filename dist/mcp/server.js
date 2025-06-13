@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { getAxionsRegistryIndex, getAxionsRegistryStyles, getAxionsComponentsByCategory, searchAxionsComponents, getAxionsComponentMetadata, resolveAxionsComponentTree, generateAxionsInstallCommand, } from "../lib/registry-api.js";
+import { getAxionsRegistryIndex, getAxionsRegistryStyles, getAxionsComponentsByCategory, searchAxionsComponents, getAxionsComponentMetadata, resolveAxionsComponentTree, generateAxionsInstallCommand, getAllAxionsComponents, getAxionsRegistryThemes, getAxionsRegistryDynamicComponents, getAxionsThemeByName, getAxionsDynamicComponentByName, } from "../lib/registry-api.js";
 import { generateComponentCode, generatePageWithComponents, } from "../lib/component-generator.js";
 export const server = new Server({
     name: "axionsjs-mcp",
@@ -37,6 +37,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 inputSchema: zodToJsonSchema(z.object({
                     category: z.string().optional().describe("Filter by category"),
                     type: z.string().optional().describe("Filter by component type"),
+                    registryType: z
+                        .string()
+                        .optional()
+                        .describe("Filter by registry type (ui, blocks, auth, etc.)"),
                 })),
             },
             {
@@ -102,14 +106,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 description: "Generate a complete page using multiple components",
                 inputSchema: zodToJsonSchema(z.object({
                     pageType: z
-                        .enum(["dashboard", "landing", "auth", "profile", "settings"])
+                        .enum([
+                        "dashboard",
+                        "landing",
+                        "auth",
+                        "profile",
+                        "settings",
+                        "hero",
+                    ])
                         .describe("Type of page to generate"),
-                    components: z.array(z.string()).describe("Components to include"),
+                    components: z
+                        .array(z.string())
+                        .optional()
+                        .describe("Components to include (optional)"),
                     style: z.string().optional().describe("Style variant"),
                     theme: z
                         .enum(["light", "dark", "system"])
                         .optional()
                         .describe("Theme preference"),
+                    description: z
+                        .string()
+                        .optional()
+                        .describe("Description of the page to generate"),
                 })),
             },
             {
@@ -126,6 +144,44 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         .record(z.string())
                         .optional()
                         .describe("Custom color overrides"),
+                })),
+            },
+            {
+                name: "get_registry_types",
+                description: "Get all available registry types",
+                inputSchema: zodToJsonSchema(z.object({})),
+            },
+            {
+                name: "get_components_by_registry",
+                description: "Get components from a specific registry",
+                inputSchema: zodToJsonSchema(z.object({
+                    registryType: z
+                        .string()
+                        .describe("Registry type (ui, blocks, auth, etc.)"),
+                })),
+            },
+            {
+                name: "get_themes",
+                description: "Get all available themes",
+                inputSchema: zodToJsonSchema(z.object({})),
+            },
+            {
+                name: "get_theme_details",
+                description: "Get detailed information about a specific theme",
+                inputSchema: zodToJsonSchema(z.object({
+                    name: z.string().describe("Theme name"),
+                })),
+            },
+            {
+                name: "get_dynamic_components",
+                description: "Get all available dynamic components",
+                inputSchema: zodToJsonSchema(z.object({})),
+            },
+            {
+                name: "get_dynamic_component_details",
+                description: "Get detailed information about a specific dynamic component",
+                inputSchema: zodToJsonSchema(z.object({
+                    name: z.string().describe("Dynamic component name"),
                 })),
             },
         ],
@@ -165,7 +221,8 @@ npx axionjs init --style ${style}
                 };
             }
             case "get_component_list": {
-                const { category, type } = request.params.arguments;
+                const { category, type, registryType } = request.params
+                    .arguments;
                 let components = await getAxionsRegistryIndex();
                 if (!components) {
                     return {
@@ -178,9 +235,17 @@ npx axionjs init --style ${style}
                 if (type) {
                     components = components.filter((comp) => comp.type === type);
                 }
-                const componentList = components
-                    .map((comp) => `- **${comp.name}** (${comp.type}): ${comp.description || "No description"}`)
-                    .join("\n");
+                // If registry type is specified, filter by that
+                if (registryType) {
+                    const allComponents = await getAllAxionsComponents();
+                    const registryComponents = allComponents[registryType];
+                    components = registryComponents || [];
+                }
+                const componentList = components && components.length > 0
+                    ? components
+                        .map((comp) => `- **${comp.name}** (${comp.type}): ${comp.description || "No description"}`)
+                        .join("\n")
+                    : "No components found";
                 return {
                     content: [
                         {
@@ -324,8 +389,7 @@ ${metadata.item.tags?.join(", ") || "None"}`;
                 };
             }
             case "create_page_with_components": {
-                const { pageType, components, style, theme } = request.params
-                    .arguments;
+                const { pageType, components = [], style, theme, description, } = request.params.arguments;
                 const result = await generatePageWithComponents(pageType, components, {
                     style,
                     theme,
@@ -337,7 +401,24 @@ ${metadata.item.tags?.join(", ") || "None"}`;
                         ],
                     };
                 }
-                const pageText = `# Generated ${pageType.charAt(0).toUpperCase() + pageType.slice(1)} Page\n\n${result.description}\n\n## Page Code\n\`\`\`tsx\n${result.pageCode}\n\`\`\`\n\n## Installation Commands\n\`\`\`bash\n${result.installCommands.join("\n")}\n\`\`\``;
+                const pageText = `# Generated ${pageType.charAt(0).toUpperCase() + pageType.slice(1)} Page
+
+${description || result.description}
+
+## Page Code
+\`\`\`tsx
+${result.pageCode}
+\`\`\`
+
+## Components Used
+${result.components
+                    .map((comp) => `- **${comp.name}** (${comp.type})`)
+                    .join("\n")}
+
+## Installation Commands
+\`\`\`bash
+${result.installCommands.join("\n")}
+\`\`\``;
                 return {
                     content: [{ type: "text", text: pageText }],
                 };
@@ -386,6 +467,203 @@ module.exports = {
                             text: `Theme configuration for "${theme}":\n\n\`\`\`javascript\n${themeConfig}\n\`\`\``,
                         },
                     ],
+                };
+            }
+            case "get_registry_types": {
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `Available AxionsJS Registry Types:
+
+- **ui**: UI components like buttons, cards, inputs
+- **blocks**: Larger pre-built blocks like heroes, features, testimonials
+- **auth**: Authentication components like login forms, signup forms
+- **charts**: Chart components for data visualization
+- **dynamic-components**: Components with dynamic behavior
+- **hooks**: React hooks for state management and other functionality
+- **icons**: Icon components
+- **lib**: Utility libraries and functions
+- **styles**: Style configurations
+- **themes**: Theme configurations
+
+To get components from a specific registry:
+\`\`\`bash
+npx axionjs add --registry [registry-type] [component-name]
+\`\`\``,
+                        },
+                    ],
+                };
+            }
+            case "get_components_by_registry": {
+                const { registryType } = request.params.arguments;
+                const allComponents = await getAllAxionsComponents();
+                const components = allComponents[registryType] || [];
+                if (components.length === 0) {
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: `No components found in registry '${registryType}'`,
+                            },
+                        ],
+                    };
+                }
+                const componentList = components
+                    .map((comp) => `- **${comp.name}** (${comp.type}): ${comp.description || "No description"}`)
+                    .join("\n");
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `Components in ${registryType} registry:\n\n${componentList}`,
+                        },
+                    ],
+                };
+            }
+            case "get_themes": {
+                const themes = await getAxionsRegistryThemes();
+                if (themes.length === 0) {
+                    return {
+                        content: [{ type: "text", text: "No themes found" }],
+                    };
+                }
+                const themesList = themes
+                    .map((theme) => `- **${theme.name}**: ${theme.label || theme.name}`)
+                    .join("\n");
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `Available AxionsJS Themes:\n\n${themesList}\n\nTo use a specific theme:\n\`\`\`bash\nnpx axionjs add --theme [theme-name]\n\`\`\``,
+                        },
+                    ],
+                };
+            }
+            case "get_theme_details": {
+                const { name } = request.params.arguments;
+                const theme = await getAxionsThemeByName(name);
+                if (!theme) {
+                    return {
+                        content: [{ type: "text", text: `Theme '${name}' not found` }],
+                    };
+                }
+                // Format the theme details
+                let themeDetails = `# ${theme.name} ${theme.label ? `(${theme.label})` : ""}
+
+**Type:** ${theme.type}
+
+## Color Palette
+
+### Light Mode
+`;
+                if (theme.cssVars?.light) {
+                    const lightVars = theme.cssVars.light;
+                    themeDetails += Object.entries(lightVars)
+                        .map(([key, value]) => `- **${key}**: ${value}`)
+                        .join("\n");
+                }
+                themeDetails += `
+
+### Dark Mode
+`;
+                if (theme.cssVars?.dark) {
+                    const darkVars = theme.cssVars.dark;
+                    themeDetails += Object.entries(darkVars)
+                        .map(([key, value]) => `- **${key}**: ${value}`)
+                        .join("\n");
+                }
+                themeDetails += `
+
+## Usage
+
+To apply this theme to your project:
+
+\`\`\`bash
+npx axionjs add --theme ${theme.name}
+\`\`\`
+
+Or add it to your tailwind.config.js:
+
+\`\`\`javascript
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: 'hsl(${theme.cssVars?.light?.primary || "0 0% 0%"})',
+        // Add other colors as needed
+      }
+    }
+  }
+}
+\`\`\`
+`;
+                return {
+                    content: [{ type: "text", text: themeDetails }],
+                };
+            }
+            case "get_dynamic_components": {
+                const dynamicComponents = await getAxionsRegistryDynamicComponents();
+                if (dynamicComponents.length === 0) {
+                    return {
+                        content: [{ type: "text", text: "No dynamic components found" }],
+                    };
+                }
+                const componentsList = dynamicComponents
+                    .map((comp) => `- **${comp.name}**: ${comp.description || "No description"}`)
+                    .join("\n");
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `Available AxionsJS Dynamic Components:\n\n${componentsList}\n\nTo use a specific dynamic component:\n\`\`\`bash\nnpx axionjs add --registry dynamic-components [component-name]\n\`\`\``,
+                        },
+                    ],
+                };
+            }
+            case "get_dynamic_component_details": {
+                const { name } = request.params.arguments;
+                const component = await getAxionsDynamicComponentByName(name);
+                if (!component) {
+                    return {
+                        content: [
+                            { type: "text", text: `Dynamic component '${name}' not found` },
+                        ],
+                    };
+                }
+                // Format the component details
+                const componentDetails = `# ${component.name}
+
+**Type:** ${component.type}
+**Description:** ${component.description || "No description"}
+
+## Dependencies
+
+### Registry Dependencies
+${component.registryDependencies && component.registryDependencies.length > 0
+                    ? component.registryDependencies.map((dep) => `- ${dep}`).join("\n")
+                    : "None"}
+
+### NPM Dependencies
+${component.dependencies && component.dependencies.length > 0
+                    ? component.dependencies.map((dep) => `- ${dep}`).join("\n")
+                    : "None"}
+
+## Files
+${component.files && component.files.length > 0
+                    ? component.files
+                        .map((file) => `- **${file.path}** (${file.type})${file.target ? ` → ${file.target}` : ""}`)
+                        .join("\n")
+                    : "No files"}
+
+## Installation
+
+\`\`\`bash
+npx axionjs add --registry dynamic-components ${component.name}
+\`\`\`
+`;
+                return {
+                    content: [{ type: "text", text: componentDetails }],
                 };
             }
             default:
