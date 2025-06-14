@@ -675,8 +675,15 @@ module.exports = {
 
 To get components from a specific registry:
 \`\`\`bash
-npx axionjs add --registry [registry-type] [component-name]
-\`\`\``,
+npx axionjs add [component-name]
+\`\`\`
+Example:
+\`\`\`bash
+npx axionjs add blocks hero-section
+npx axionjs add auth login-form
+npx axionjs add charts line-chart
+\`\`\`
+`,
             },
           ],
         };
@@ -836,7 +843,7 @@ module.exports = {
           content: [
             {
               type: "text",
-              text: `Available AxionsJS Dynamic Components:\n\n${componentsList}\n\nTo use a specific dynamic component:\n\`\`\`bash\nnpx axionjs add --registry dynamic-components [component-name]\n\`\`\``,
+              text: `Available AxionsJS Dynamic Components:\n\n${componentsList}\n\nTo use a specific dynamic component:\n\`\`\`bash\nnpx axionjs add dynamic-components [component-name]\n\`\`\``,
             },
           ],
         };
@@ -894,7 +901,7 @@ ${
 ## Installation
 
 \`\`\`bash
-npx axionjs add --registry dynamic-components ${component.name}
+npx axionjs add dynamic-components ${component.name}
 \`\`\`
 `;
 
