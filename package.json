@@ -1,36 +1,73 @@
 {
   "name": "axionsjs-mcp-server",
-  "version": "0.1.0",
-  "private": true,
+  "version": "2.2.0",
+  "description": "Model Context Protocol (MCP) server for AxionsJS component library with unified registry support",
   "type": "module",
+  "main": "dist/mcp/server.js",
+  "bin": {
+    "axionsjs-mcp": "bin/axionsjs-mcp.js"
+  },
+  "files": [
+    "dist/",
+    "bin/",
+    "README.md"
+  ],
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build && npm run build:mcp",
     "build:mcp": "npx tsc --project tsconfig.mcp.json",
+    "test:package": "node scripts/test-package.js",
+    "prepublishOnly": "npm run build:mcp && npm run test:package",
     "start": "next start -p 3001",
     "start:mcp": "node dist/mcp/server.js",
     "lint": "next lint"
   },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "axionsjs",
+    "components",
+    "ai",
+    "tools",
+    "shadcn",
+    "ui"
+  ],
+  "author": "AxionsJS Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/axionsjs/axionsjs-mcp.git"
+  },
+  "homepage": "https://github.com/axionsjs/axionsjs-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/axionsjs/axionsjs-mcp/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
-    "clsx": "^2.1.1",
-    "deepmerge": "^4.3.1",
-    "next": "14.0.0",
     "node-fetch": "^3.3.2",
-    "react": "^18",
-    "react-dom": "^18",
-    "tailwind-merge": "^2.6.0",
-    "ts-morph": "^21.0.1",
-    "tsconfig-paths": "^4.2.0",
     "zod": "^3.22.4",
     "zod-to-json-schema": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^18",
+    "@types/react": "^18.3.23",
     "@types/react-dom": "^18",
+    "clsx": "^2.1.1",
+    "deepmerge": "^4.3.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.0",
+    "next": "14.0.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "tailwind-merge": "^2.6.0",
+    "ts-morph": "^21.0.1",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
