@@ -1,0 +1,46 @@
+# Source files
+mcp/
+lib/
+app/
+components/
+hooks/
+styles/
+
+# Development files
+.next/
+.env*
+.gitignore
+.eslintrc.json
+next.config.js
+next.config.mjs
+next-env.d.ts
+tailwind.config.ts
+tsconfig.json
+tsconfig.mcp.json
+postcss.config.mjs
+components.json
+
+# Development scripts
+script/
+
+# Public assets (not needed for MCP)
+public/
+
+# Documentation (keep README.md)
+*.md
+!README.md
+
+# Node modules and logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
