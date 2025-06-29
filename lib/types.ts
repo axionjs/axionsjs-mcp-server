@@ -1,37 +1,37 @@
 import { z } from "zod";
 
-// Define registry types
+// Define registry types based on actual registry.json structure
 export type AxionsRegistryType =
   | "ui"
-  | "hooks"
-  | "blocks"
-  | "auth"
-  | "charts"
-  | "dynamic-components"
-  | "icons"
+  | "theme"
+  | "hook"
+  | "block"
+  | "dynamic-component"
   | "lib"
-  | "styles"
-  | "themes";
+  | "component"
+  | "page"
+  | "file"
+  | "actions"
+  | "api"
+  | "auth_comp"
+  | "email"
+  | "middleware"
+  | "schemas";
 
-// Define schemas
+// Define schemas based on actual registry.json structure
 export const axionsRegistryItemTypeSchema = z.enum([
-  "registry:lib",
-  "registry:block",
-  "registry:component",
   "registry:ui",
+  "registry:theme",
   "registry:hook",
+  "registry:block",
+  "registry:dynamic-component",
+  "registry:lib",
+  "registry:component",
   "registry:page",
   "registry:file",
-  "registry:theme",
-  "registry:style",
-  "registry:example",
-  "registry:internal",
-  "registry:auth",
-  "registry:chart",
-  "registry:dynamic-component",
-  "registry:icon",
   "registry:actions",
   "registry:api",
+  "registry:auth_comp",
   "registry:email",
   "registry:middleware",
   "registry:schemas",

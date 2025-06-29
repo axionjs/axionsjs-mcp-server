@@ -19,6 +19,13 @@ import {
   getAxionsRegistryDynamicComponents,
   getAxionsThemeByName,
   getAxionsDynamicComponentByName,
+  // New MagicUI-style functions
+  fetchUIComponents,
+  fetchComponentDetails,
+  fetchExampleComponents,
+  fetchExampleDetails,
+  fetchComponentsByType,
+  findComponentByName,
 } from "../lib/registry-api.js";
 import {
   generateComponentCode,
@@ -235,6 +242,56 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: zodToJsonSchema(
           z.object({
             name: z.string().describe("Dynamic component name"),
+          })
+        ),
+      },
+      {
+        name: "fetch_ui_components",
+        description: "Fetch all UI components from AxionsJS registry",
+        inputSchema: zodToJsonSchema(z.object({})),
+      },
+      {
+        name: "fetch_component_details",
+        description: "Fetch detailed information about a specific component",
+        inputSchema: zodToJsonSchema(
+          z.object({
+            name: z.string().describe("Component name"),
+          })
+        ),
+      },
+      {
+        name: "fetch_example_components",
+        description: "Fetch all example components from AxionsJS registry",
+        inputSchema: zodToJsonSchema(z.object({})),
+      },
+      {
+        name: "fetch_example_details",
+        description: "Fetch detailed information about a specific example",
+        inputSchema: zodToJsonSchema(
+          z.object({
+            name: z.string().describe("Example name"),
+          })
+        ),
+      },
+      {
+        name: "fetch_components_by_type",
+        description:
+          "Fetch components by their registry type from the unified registry",
+        inputSchema: zodToJsonSchema(
+          z.object({
+            type: z
+              .string()
+              .describe("Registry type (ui, blocks, auth, hooks, etc.)"),
+          })
+        ),
+      },
+      {
+        name: "find_component_by_name",
+        description:
+          "Find a specific component by name across all registry types",
+        inputSchema: zodToJsonSchema(
+          z.object({
+            name: z.string().describe("Component name to search for"),
           })
         ),
       },
@@ -472,7 +529,8 @@ ${metadata.item.tags?.join(", ") || "None"}`;
         });
 
         const { resolved, dependencies } = await resolveAxionsComponentTree(
-          components
+          components,
+          style
         );
 
         let installText = `To install the requested components:\n\n\`\`\`bash\n${installCommand}\n\`\`\`\n\n`;
@@ -502,7 +560,7 @@ ${metadata.item.tags?.join(", ") || "None"}`;
           .arguments as any;
 
         const { resolved, dependencies, installCommand } =
-          await resolveAxionsComponentTree(components);
+          await resolveAxionsComponentTree(components, "new-york");
 
         const dependencyTree = resolved
           .map((comp: any) => {
@@ -910,8 +968,257 @@ npx axionjs add dynamic-components ${component.name}
         };
       }
 
-      default:
-        throw new Error(`Tool ${request.params.name} not found`);
+      // New MagicUI-style handlers
+      case "fetch_ui_components": {
+        try {
+          const components = await fetchUIComponents();
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Found ${components.length} UI components:\n\n${components
+                  .map(
+                    (comp) =>
+                      `**${comp.name}** (${comp.type})\n${comp.description || "No description"}`
+                  )
+                  .join("\n\n")}`,
+              },
+            ],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error fetching UI components: ${error instanceof Error ? error.message : "Unknown error"}`,
+              },
+            ],
+          };
+        }
+      }
+
+      case "fetch_component_details": {
+        const { name } = request.params.arguments as { name: string };
+        try {
+          const component = await fetchComponentDetails(name);
+          if (!component) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Component "${name}" not found in AxionsJS registry.`,
+                },
+              ],
+            };
+          }
+
+          let detailsText = `# ${component.name}\n\n`;
+          detailsText += `**Type:** ${component.type}\n`;
+          if (component.description) {
+            detailsText += `**Description:** ${component.description}\n`;
+          }
+          if (component.dependencies?.length) {
+            detailsText += `**Dependencies:** ${component.dependencies.join(", ")}\n`;
+          }
+          if (component.registryDependencies?.length) {
+            detailsText += `**Registry Dependencies:** ${component.registryDependencies.join(", ")}\n`;
+          }
+          if (component.files?.length) {
+            detailsText += `**Files:** ${component.files.length} file(s)\n`;
+          }
+          if (component.categories?.length) {
+            detailsText += `**Categories:** ${component.categories.join(", ")}\n`;
+          }
+          if (component.tags?.length) {
+            detailsText += `**Tags:** ${component.tags.join(", ")}\n`;
+          }
+
+          return {
+            content: [{ type: "text", text: detailsText }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error fetching component details: ${error instanceof Error ? error.message : "Unknown error"}`,
+              },
+            ],
+          };
+        }
+      }
+
+      case "fetch_example_components": {
+        try {
+          const examples = await fetchExampleComponents();
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Found ${examples.length} example components:\n\n${examples
+                  .map(
+                    (example) =>
+                      `**${example.name}** (${example.type})\n${example.description || "No description"}${
+                        example.registryDependencies?.length
+                          ? `\nDependencies: ${example.registryDependencies.join(", ")}`
+                          : ""
+                      }`
+                  )
+                  .join("\n\n")}`,
+              },
+            ],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error fetching example components: ${error instanceof Error ? error.message : "Unknown error"}`,
+              },
+            ],
+          };
+        }
+      }
+
+      case "fetch_example_details": {
+        const { name } = request.params.arguments as { name: string };
+        try {
+          const example = await fetchExampleDetails(name);
+          if (!example) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Example "${name}" not found in AxionsJS registry.`,
+                },
+              ],
+            };
+          }
+
+          let detailsText = `# ${example.name} (Example)\n\n`;
+          detailsText += `**Type:** ${example.type}\n`;
+          if (example.description) {
+            detailsText += `**Description:** ${example.description}\n`;
+          }
+          if (example.registryDependencies?.length) {
+            detailsText += `**Registry Dependencies:** ${example.registryDependencies.join(", ")}\n`;
+          }
+          if (example.dependencies?.length) {
+            detailsText += `**NPM Dependencies:** ${example.dependencies.join(", ")}\n`;
+          }
+          if (example.files?.length) {
+            detailsText += `**Files:** ${example.files.length} file(s)\n`;
+          }
+
+          return {
+            content: [{ type: "text", text: detailsText }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error fetching example details: ${error instanceof Error ? error.message : "Unknown error"}`,
+              },
+            ],
+          };
+        }
+      }
+
+      case "fetch_components_by_type": {
+        const { type } = request.params.arguments as { type: string };
+        try {
+          const components = await fetchComponentsByType(type);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Found ${components.length} components of type "${type}":\n\n${components
+                  .map(
+                    (comp) =>
+                      `**${comp.name}**\n${comp.description || "No description"}${
+                        comp.dependencies?.length
+                          ? `\nDependencies: ${comp.dependencies.join(", ")}`
+                          : ""
+                      }`
+                  )
+                  .join("\n\n")}`,
+              },
+            ],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error fetching components by type: ${error instanceof Error ? error.message : "Unknown error"}`,
+              },
+            ],
+          };
+        }
+      }
+
+      case "find_component_by_name": {
+        const { name } = request.params.arguments as { name: string };
+        try {
+          const { component, registryType } = await findComponentByName(name);
+          if (!component) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Component "${name}" not found in AxionsJS registry.`,
+                },
+              ],
+            };
+          }
+
+          let detailsText = `# ${component.name}\n\n`;
+          detailsText += `**Registry Type:** ${registryType}\n`;
+          detailsText += `**Type:** ${component.type}\n`;
+          if (component.description) {
+            detailsText += `**Description:** ${component.description}\n`;
+          }
+          if (component.dependencies?.length) {
+            detailsText += `**Dependencies:** ${component.dependencies.join(", ")}\n`;
+          }
+          if (component.registryDependencies?.length) {
+            detailsText += `**Registry Dependencies:** ${component.registryDependencies.join(", ")}\n`;
+          }
+          if (component.files?.length) {
+            detailsText += `**Files:** ${component.files.length} file(s)\n`;
+          }
+
+          const installCommand = `npx axionjs add ${name}`;
+          detailsText += `\n**Installation:**\n\`\`\`bash\n${installCommand}\n\`\`\``;
+
+          return {
+            content: [{ type: "text", text: detailsText }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error finding component: ${error instanceof Error ? error.message : "Unknown error"}`,
+              },
+            ],
+          };
+        }
+      }
+
+      default: {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Unknown tool: ${request.params.name}`,
+            },
+          ],
+        };
+      }
+
+      // ...existing handlers...
     }
   } catch (error) {
     if (error instanceof z.ZodError) {

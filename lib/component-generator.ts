@@ -10,32 +10,64 @@ import {
   getAxionsDynamicComponentByName,
 } from "./registry-api.js";
 
-// Define the registry type string type
+// Define the registry type string type based on actual registry.json structure
 type RegistryTypeString =
   | "ui"
-  | "hooks"
-  | "blocks"
-  | "auth"
-  | "charts"
-  | "dynamic-components"
-  | "icons"
+  | "theme"
+  | "hook"
+  | "block"
+  | "dynamic-component"
   | "lib"
-  | "styles"
-  | "themes";
+  | "component"
+  | "page"
+  | "file"
+  | "actions"
+  | "api"
+  | "auth_comp"
+  | "email"
+  | "middleware"
+  | "schemas";
 
 // Define the function locally since we can't import it from utils.js
 function getRegistryTypeFromItemType(itemType: string): RegistryTypeString {
-  if (itemType.includes("ui")) return "ui";
-  if (itemType.includes("hook")) return "hooks";
-  if (itemType.includes("block")) return "blocks";
-  if (itemType.includes("auth")) return "auth";
-  if (itemType.includes("chart")) return "charts";
-  if (itemType.includes("dynamic")) return "dynamic-components";
-  if (itemType.includes("icon")) return "icons";
-  if (itemType.includes("lib")) return "lib";
-  if (itemType.includes("style")) return "styles";
-  if (itemType.includes("theme")) return "themes";
-  return "ui"; // Default to UI
+  // Extract the type after "registry:"
+  const type = itemType.replace("registry:", "");
+
+  // Map known types to our RegistryTypeString
+  switch (type) {
+    case "ui":
+      return "ui";
+    case "theme":
+      return "theme";
+    case "hook":
+      return "hook";
+    case "block":
+      return "block";
+    case "dynamic-component":
+      return "dynamic-component";
+    case "lib":
+      return "lib";
+    case "component":
+      return "component";
+    case "page":
+      return "page";
+    case "file":
+      return "file";
+    case "actions":
+      return "actions";
+    case "api":
+      return "api";
+    case "auth_comp":
+      return "auth_comp";
+    case "email":
+      return "email";
+    case "middleware":
+      return "middleware";
+    case "schemas":
+      return "schemas";
+    default:
+      return "ui"; // Default to UI for unknown types
+  }
 }
 
 export interface ComponentGenerationOptions {
@@ -83,9 +115,10 @@ export async function generateComponentCode(
   // Generate usage example
   const usage = generateUsageExample(componentName, item, options);
 
-  const { dependencies, installCommand } = await resolveAxionsComponentTree([
-    componentName,
-  ]);
+  const { dependencies, installCommand } = await resolveAxionsComponentTree(
+    [componentName],
+    options.style || "new-york"
+  );
 
   return {
     code,
@@ -257,23 +290,25 @@ export async function generatePageWithComponents(
 
     // Resolve all components
     for (const componentName of components) {
-      const { component, registryType } = await findComponentByName(
-        componentName
-      );
+      const { component, registryType } =
+        await findComponentByName(componentName);
       if (component && registryType) {
-        resolvedComponents.push({ component, registryType });
-        const { installCommand } = await resolveAxionsComponentTree([
-          componentName,
-        ]);
+        // Convert string to RegistryTypeString
+        const typedRegistryType = registryType as RegistryTypeString;
+        resolvedComponents.push({ component, registryType: typedRegistryType });
+        const { installCommand } = await resolveAxionsComponentTree(
+          [componentName],
+          options.style || "new-york"
+        );
         installCommands.push(installCommand);
       }
     }
 
     // If no specific components were requested, find appropriate ones for the page type
     if (resolvedComponents.length === 0) {
-      // For hero pages, look for hero components in blocks registry
-      if (pageType === "hero" && allRegistryComponents.blocks) {
-        const heroBlocks = allRegistryComponents.blocks.filter((block) =>
+      // For hero pages, look for hero components in block registry
+      if (pageType === "hero" && allRegistryComponents.block) {
+        const heroBlocks = allRegistryComponents.block.filter((block) =>
           block.name.toLowerCase().includes("hero")
         );
 
@@ -282,11 +317,12 @@ export async function generatePageWithComponents(
             // Limit to 3 components
             resolvedComponents.push({
               component: block,
-              registryType: "blocks",
+              registryType: "block",
             });
-            const { installCommand } = await resolveAxionsComponentTree([
-              block.name,
-            ]);
+            const { installCommand } = await resolveAxionsComponentTree(
+              [block.name],
+              options.style || "new-york"
+            );
             installCommands.push(installCommand);
           }
         }
@@ -299,9 +335,10 @@ export async function generatePageWithComponents(
       );
       for (const { component, registryType } of relevantComponents) {
         resolvedComponents.push({ component, registryType });
-        const { installCommand } = await resolveAxionsComponentTree([
-          component.name,
-        ]);
+        const { installCommand } = await resolveAxionsComponentTree(
+          [component.name],
+          options.style || "new-york"
+        );
         installCommands.push(installCommand);
       }
     }

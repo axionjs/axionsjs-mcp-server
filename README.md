@@ -1,15 +1,40 @@
-# AxionsJS MCP Server
+# AxionsJS MCP Server v2.2
 
 A Model Context Protocol (MCP) server for the AxionsJS component library, providing AI assistants with tools to discover, install, and generate code using AxionsJS components.
 
+## 🚀 What's New in v2.2
+
+- **Component Code Fetching**: Enhanced ability to fetch actual component source code from AxionsJS registry
+- **Multi-Endpoint Support**: Tries multiple API endpoints (`/r/styles/{style}/{name}.json`, `/r/{name}.json`) for maximum compatibility
+- **Graceful Fallbacks**: Falls back to component metadata when code endpoints are unavailable
+- **Robust Error Handling**: Improved error handling with informative warnings and fallback strategies
+- **Development-Friendly**: Works seamlessly in both local development and production environments
+
+## 🔄 Previous Updates (v2.1)
+
+- **Enhanced Registry Structure Support**: Full compatibility with AxionsJS registry.json structure including all 15+ registry types
+- **Improved Type Safety**: Updated TypeScript definitions to match actual registry schema
+- **Better Component Categorization**: Support for ui, theme, hook, block, dynamic-component, lib, component, page, file, actions, api, auth_comp, email, middleware, and schemas
+- **Optimized Import Paths**: Accurate import path generation for all component types
+- **Robust Error Handling**: Enhanced error handling and fallback mechanisms for all registry operations
+
+## 🔄 Previous Updates (v2.0)
+
+- **Unified Registry**: Complete refactoring to use a single `registry.json` endpoint instead of multiple registry files
+- **MagicUI-Inspired Architecture**: Follows industry-standard patterns for better performance and maintainability
+- **Enhanced Search**: Improved component discovery across all registry types
+- **Performance Improvements**: Single API call instead of multiple separate requests
+
 ## Features
 
-- 🔍 **Component Discovery**: Search and browse available components
+- 🔍 **Component Discovery**: Search and browse available components across all registry types
 - 📦 **Dependency Resolution**: Automatically resolve component dependencies
 - 🛠️ **Code Generation**: Generate customized component code
 - 📄 **Page Templates**: Create complete pages using multiple components
 - 🎨 **Theme Management**: Apply and customize themes
 - 📊 **Metadata Access**: Get detailed component information
+- 🔄 **Unified Registry**: Single endpoint for all component types (ui, theme, hook, block, dynamic-component, lib, component, page, file, actions, api, auth_comp, email, middleware, schemas)
+- 🎯 **Type Safety**: Full TypeScript support with proper type definitions
 
 ## Installation
 
