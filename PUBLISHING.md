@@ -1,4 +1,4 @@
-# AxionsJS MCP Publishing Guide
+# AxionJS MCP Publishing Guide
 
 ## Pre-Publication Checklist
 
@@ -116,7 +116,7 @@ npx @axionsjs/mcp@latest
       "command": "npx",
       "args": ["-y", "@axionsjs/mcp@latest"],
       "env": {
-        "AXIONS_REGISTRY_URL": "https://your-registry.com"
+        "AXIONJS_REGISTRY_URL": "https://your-registry.com"
       }
     }
   }
@@ -169,6 +169,7 @@ npm version major && npm publish
    ```
 
 2. **Package Name Conflicts**
+
    - Ensure `@axionsjs/mcp` is available
    - Check on npmjs.com
 
@@ -185,5 +186,5 @@ npm version major && npm publish
 
 ### Support
 
-- GitHub Issues: https://github.com/axionsjs/axionsjs-mcp/issues
-- NPM Package: https://npmjs.com/package/@axionsjs/mcp
+- GitHub Issues: https://github.com/axionjs/axionsjs-mcp-server.git/issues
+- NPM Package: https://www.npmjs.com/package/axionsjs-mcp-server

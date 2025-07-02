@@ -4,8 +4,8 @@ const nextConfig = {
     serverComponentsExternalPackages: ["@modelcontextprotocol/sdk"],
   },
   env: {
-    AXIONS_REGISTRY_URL:
-      process.env.AXIONS_REGISTRY_URL || "http://localhost:3000",
+    AXIONJS_REGISTRY_URL:
+      process.env.AXIONJS_REGISTRY_URL || "http://localhost:3000",
   },
   eslint: {
     ignoreDuringBuilds: true,

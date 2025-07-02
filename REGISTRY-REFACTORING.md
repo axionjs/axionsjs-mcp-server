@@ -1,8 +1,8 @@
-# AxionsJS MCP v2.1 Refactoring Summary
+# AxionJS MCP v2.1 Refactoring Summary
 
 ## Overview
 
-This document summarizes the comprehensive refactoring of the AxionsJS MCP server to perfectly align with the actual AxionsJS registry.json structure as implemented on the official AxionsJS website.
+This document summarizes the comprehensive refactoring of the AxionJS MCP server to perfectly align with the actual AxionJS registry.json structure as implemented on the official AxionJS website.
 
 ## Registry Structure Analysis
 
@@ -11,22 +11,27 @@ After analyzing the actual `registry.json` file, we identified **15 distinct reg
 ### Core Registry Types
 
 1. **`registry:ui`** - Basic UI components (55 components)
+
    - Examples: accordion, button, card, input, etc.
    - Import path: `@/components/ui/{name}`
 
 2. **`registry:theme`** - Theme configurations (49 themes)
+
    - Examples: creativePurple, elegantEmerald, comicPop, etc.
    - Import path: `@/themes/{name}`
 
 3. **`registry:hook`** - React hooks (24 hooks)
+
    - Examples: use-async, use-debounce, use-mobile, etc.
    - Import path: `@/hooks/{name}`
 
 4. **`registry:block`** - Page sections/blocks (98 blocks)
+
    - Examples: hero-_, login-_, navbar-_, footer-_, etc.
    - Import path: `@/components/blocks/{name}`
 
 5. **`registry:dynamic-component`** - Complex multi-file components (11 components)
+
    - Examples: rbac-auth, contact-form, quiz, etc.
    - Import path: `@/components/dynamic/{name}`
 
@@ -37,27 +42,35 @@ After analyzing the actual `registry.json` file, we identified **15 distinct reg
 ### Additional Registry Types
 
 7. **`registry:component`** - General components
+
    - Import path: `@/components/{name}`
 
 8. **`registry:page`** - Page templates
+
    - Import path: `@/app/{name}`
 
 9. **`registry:file`** - Configuration files
+
    - Import path: `@/{name}`
 
 10. **`registry:actions`** - Server actions
+
     - Import path: `@/actions/{name}`
 
 11. **`registry:api`** - API routes
+
     - Import path: `@/api/{name}`
 
 12. **`registry:auth_comp`** - Authentication components
+
     - Import path: `@/components/auth/{name}`
 
 13. **`registry:email`** - Email templates
+
     - Import path: `@/emails/{name}`
 
 14. **`registry:middleware`** - Middleware functions
+
     - Import path: `@/middleware/{name}`
 
 15. **`registry:schemas`** - Validation schemas
@@ -204,7 +217,7 @@ Comprehensive testing shows:
 
 ## Benefits
 
-1. **Perfect Alignment**: Code now matches actual AxionsJS registry structure
+1. **Perfect Alignment**: Code now matches actual AxionJS registry structure
 2. **Complete Coverage**: Support for all 15 registry types instead of just 10
 3. **Accurate Import Paths**: Proper import paths for each component type
 4. **Better Type Safety**: TypeScript types match real data structure
@@ -214,6 +227,7 @@ Comprehensive testing shows:
 ## Version History
 
 - **v2.0.0**: Initial unified registry refactoring
-- **v2.1.0**: Perfect alignment with actual AxionsJS registry structure
+- **v2.1.0**: Perfect alignment with actual AxionJS registry structure
+- **v2.1.1**: Fixed names
 
-This refactoring ensures the MCP server provides accurate and comprehensive support for the entire AxionsJS component ecosystem.
+This refactoring ensures the MCP server provides accurate and comprehensive support for the entire AxionJS component ecosystem.

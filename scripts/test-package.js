@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-// Test script for the AxionsJS MCP package
+// Test script for the AxionJS MCP package
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-console.log("🧪 Testing AxionsJS MCP Package...\n");
+console.log("🧪 Testing AxionJS MCP Package...\n");
 
 // Test 1: Check package.json
 try {

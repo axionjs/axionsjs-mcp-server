@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Building AxionsJS MCP Server..."
+echo "Building AxionJS MCP Server..."
 
 # Clean dist directory
 rm -rf dist

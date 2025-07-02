@@ -2,8 +2,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       <div className="max-w-4xl mx-auto text-center p-8">
-        <h1 className="text-5xl font-bold text-gray-900 mb-6">AxionsJS MCP Server</h1>
-        <p className="text-xl text-gray-600 mb-8">Model Context Protocol server for AxionsJS component library</p>
+        <h1 className="text-5xl font-bold text-gray-900 mb-6">
+          AxionJS MCP Server
+        </h1>
+        <p className="text-xl text-gray-600 mb-8">
+          Model Context Protocol server for AxionJS component library
+        </p>
 
         <div className="grid md:grid-cols-2 gap-8 mt-12">
           <div className="bg-white rounded-lg p-6 shadow-lg">
@@ -32,9 +36,12 @@ export default function Home() {
         <div className="mt-12 p-6 bg-gray-900 rounded-lg text-white">
           <h3 className="text-lg font-semibold mb-2">Server Status</h3>
           <p>Running on port 3001</p>
-          <p>Registry URL: {process.env.AXIONS_REGISTRY_URL || "http://localhost:3000"}</p>
+          <p>
+            Registry URL:{" "}
+            {process.env.AXION_REGISTRY_URL || "http://localhost:3000"}
+          </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

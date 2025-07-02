@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Publishing AxionsJS MCP to NPM..."
+echo "🚀 Publishing AxionJS MCP to NPM..."
 echo
 
 # Check if logged in to npm

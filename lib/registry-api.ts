@@ -11,8 +11,8 @@ export type AxionsRegistryItem = z.infer<typeof axionsRegistryItemSchema>;
 export type AxionsRegistryIndex = z.infer<typeof axionsRegistryIndexSchema>;
 
 // Use environment variable for AxionsJS registry URL
-const AXIONS_REGISTRY_URL =
-  process.env.AXIONS_REGISTRY_URL || "http://localhost:3001";
+const AXIONJS_REGISTRY_URL =
+  process.env.AXIONJS_REGISTRY_URL || "http://localhost:3001";
 
 // Cache for registry data
 const registryCache = new Map<string, any>();
@@ -62,7 +62,7 @@ export async function fetchUIComponents(): Promise<
   z.infer<typeof ComponentSchema>[]
 > {
   try {
-    const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
+    const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
     if (!response.ok) {
       throw new Error(
         `Failed to fetch registry.json: ${response.statusText} (Status: ${response.status})`
@@ -99,7 +99,7 @@ export async function fetchComponentWithCode(
   try {
     // First check if component exists in registry.json
     const registryResponse = await fetch(
-      `${AXIONS_REGISTRY_URL}/registry.json`
+      `${AXIONJS_REGISTRY_URL}/registry.json`
     );
     if (!registryResponse.ok) {
       throw new Error(
@@ -119,7 +119,7 @@ export async function fetchComponentWithCode(
     // Try to fetch the actual component code from style-specific endpoint
     try {
       const codeResponse = await fetch(
-        `${AXIONS_REGISTRY_URL}/r/styles/${style}/${name}.json`
+        `${AXIONJS_REGISTRY_URL}/r/styles/${style}/${name}.json`
       );
       if (codeResponse.ok) {
         const codeData = await codeResponse.json();
@@ -146,7 +146,7 @@ export async function fetchComponentWithCode(
 
     // Try alternative endpoint format: /r/{name}.json
     try {
-      const altResponse = await fetch(`${AXIONS_REGISTRY_URL}/r/${name}.json`);
+      const altResponse = await fetch(`${AXIONJS_REGISTRY_URL}/r/${name}.json`);
       if (altResponse.ok) {
         const altData = await altResponse.json();
         const componentWithCode = axionsRegistryItemSchema.parse(altData);
@@ -188,7 +188,7 @@ export async function fetchExampleComponents(): Promise<
   z.infer<typeof ExampleComponentSchema>[]
 > {
   try {
-    const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
+    const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
     if (!response.ok) {
       throw new Error(`Failed to fetch registry.json: ${response.statusText}`);
     }
@@ -206,7 +206,7 @@ export async function fetchExampleComponents(): Promise<
         });
       });
   } catch (error) {
-    console.error("Error fetching AxionsJS example components:", error);
+    console.error("Error fetching AxionJS example components:", error);
     return [];
   }
 }
@@ -216,7 +216,7 @@ export async function fetchExampleDetails(
   exampleName: string
 ): Promise<z.infer<typeof ExampleDetailSchema> | null> {
   try {
-    const response = await fetch(`${AXIONS_REGISTRY_URL}/r/${exampleName}`);
+    const response = await fetch(`${AXIONJS_REGISTRY_URL}/r/${exampleName}`);
     if (!response.ok) {
       throw new Error(
         `Failed to fetch example details for ${exampleName}: ${response.statusText}`
@@ -233,7 +233,7 @@ export async function fetchExampleDetails(
 // Function to get the main registry index
 export async function getAxionsRegistryIndex(): Promise<AxionsRegistryIndex | null> {
   try {
-    const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
+    const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
     if (!response.ok) {
       throw new Error(`Failed to fetch registry index: ${response.statusText}`);
     }
@@ -250,7 +250,7 @@ export async function fetchComponentsByType(
   type: string
 ): Promise<AxionsRegistryItem[]> {
   try {
-    const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
+    const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
     if (!response.ok) {
       throw new Error(`Failed to fetch registry.json: ${response.statusText}`);
     }
@@ -271,7 +271,7 @@ export async function getAllAxionsComponents(): Promise<{
   [key: string]: AxionsRegistryItem[];
 }> {
   try {
-    const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
+    const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
     if (!response.ok) {
       throw new Error(`Failed to fetch registry.json: ${response.statusText}`);
     }
@@ -306,7 +306,7 @@ export async function findComponentByName(
   registryType: string | null;
 }> {
   try {
-    const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
+    const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
     if (!response.ok) {
       throw new Error(`Failed to fetch registry.json: ${response.statusText}`);
     }
@@ -429,7 +429,7 @@ export async function resolveAxionsComponentTree(
     await resolveComponent(name);
   }
 
-  const installCommand = `npx axionjs add ${names.join(" ")}`;
+  const installCommand = `npx axionjs-ui add ${names.join(" ")}`;
 
   return {
     resolved,
@@ -447,7 +447,7 @@ export function generateAxionsInstallCommand(
     style?: string;
   }
 ): string {
-  let command = `npx axionjs add ${components.join(" ")}`;
+  let command = `npx axionjs-ui add ${components.join(" ")}`;
 
   if (options?.overwrite) {
     command += " --overwrite";
@@ -470,7 +470,7 @@ export async function getAxionsRegistryStyles(): Promise<
 > {
   try {
     // Try to get styles from the main registry
-    const response = await fetch(`${AXIONS_REGISTRY_URL}/registry.json`);
+    const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
     if (!response.ok) {
       throw new Error(`Failed to fetch styles: ${response.statusText}`);
     }

@@ -1,5 +1,5 @@
 @echo off
-echo Building AxionsJS MCP Server...
+echo Building AxionJS MCP Server...
 
 REM Clean dist directory
 if exist dist rmdir /s /q dist

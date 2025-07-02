@@ -6,7 +6,7 @@ import {
 } from "./dist/lib/registry-api.js";
 
 async function testRegistry() {
-  console.log("Testing AxionsJS MCP Server Registry Functions...\n");
+  console.log("Testing AxionJS MCP Server Registry Functions...\n");
 
   try {
     // Test 1: Get registry index
@@ -25,7 +25,9 @@ async function testRegistry() {
     console.log(`✅ Found ${uiComponents.length} UI components`);
     if (uiComponents.length > 0) {
       console.log(
-        `   Example: ${uiComponents[0].name} - ${uiComponents[0].description || "No description"}`
+        `   Example: ${uiComponents[0].name} - ${
+          uiComponents[0].description || "No description"
+        }`
       );
     }
 
@@ -35,7 +37,9 @@ async function testRegistry() {
     console.log(`✅ Found ${blockComponents.length} block components`);
     if (blockComponents.length > 0) {
       console.log(
-        `   Example: ${blockComponents[0].name} - ${blockComponents[0].description || "No description"}`
+        `   Example: ${blockComponents[0].name} - ${
+          blockComponents[0].description || "No description"
+        }`
       );
     }
 

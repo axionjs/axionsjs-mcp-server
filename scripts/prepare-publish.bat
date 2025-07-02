@@ -1,6 +1,6 @@
 @echo off
 
-echo Building AxionsJS MCP...
+echo Building AxionJS MCP...
 call npm run build:mcp
 
 if not exist "dist" (

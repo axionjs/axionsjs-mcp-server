@@ -1,4 +1,4 @@
-# AxionsJS MCP Server - Refactored
+# AxionJS MCP Server - Refactored
 
 This MCP server has been successfully refactored to follow the MagicUI pattern, using a unified `registry.json` approach instead of separate registry files.
 
@@ -35,8 +35,8 @@ The `registry.json` file now contains all components in a single structure:
 
 ```json
 {
-  "name": "AxionsJS Registry",
-  "homepage": "https://axionsjs.com",
+  "name": "AxionJS Registry",
+  "homepage": "https://axionjs.com",
   "items": [
     {
       "name": "button",
@@ -78,7 +78,7 @@ The `registry.json` file now contains all components in a single structure:
 
 ## Environment Configuration
 
-The server uses `AXIONS_REGISTRY_URL` environment variable or defaults to `http://localhost:3001`.
+The server uses `AXION_REGISTRY_URL` environment variable or defaults to `http://localhost:3000`.
 
 ## Testing
 
@@ -123,4 +123,4 @@ The server now provides tools that can be called via MCP clients:
 - `find_component_by_name` - Searches for specific component
 - `fetch_components_by_type` - Gets components by registry type
 
-This refactored approach makes the AxionsJS MCP server more robust, performant, and aligned with industry patterns established by libraries like MagicUI.
+This refactored approach makes the AxionJS MCP server more robust, performant, and aligned with industry patterns established by libraries like MagicUI.

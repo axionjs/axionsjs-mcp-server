@@ -1,10 +1,10 @@
-# AxionsJS MCP Server v2.2
+# AxionJS MCP Server v2.2
 
-A Model Context Protocol (MCP) server for the AxionsJS component library, providing AI assistants with tools to discover, install, and generate code using AxionsJS components.
+A Model Context Protocol (MCP) server for the [AxionJS component library](https://www.axionjs.com), providing AI assistants and developer tools with a unified API to discover, install, and generate code using AxionJS components, themes, and utilities.
 
 ## 🚀 What's New in v2.2
 
-- **Component Code Fetching**: Enhanced ability to fetch actual component source code from AxionsJS registry
+- **Component Code Fetching**: Enhanced ability to fetch actual component source code from AxionJS registry
 - **Multi-Endpoint Support**: Tries multiple API endpoints (`/r/styles/{style}/{name}.json`, `/r/{name}.json`) for maximum compatibility
 - **Graceful Fallbacks**: Falls back to component metadata when code endpoints are unavailable
 - **Robust Error Handling**: Improved error handling with informative warnings and fallback strategies
@@ -12,7 +12,7 @@ A Model Context Protocol (MCP) server for the AxionsJS component library, provid
 
 ## 🔄 Previous Updates (v2.1)
 
-- **Enhanced Registry Structure Support**: Full compatibility with AxionsJS registry.json structure including all 15+ registry types
+- **Enhanced Registry Structure Support**: Full compatibility with AxionJS registry.json structure including all 15+ registry types
 - **Improved Type Safety**: Updated TypeScript definitions to match actual registry schema
 - **Better Component Categorization**: Support for ui, theme, hook, block, dynamic-component, lib, component, page, file, actions, api, auth_comp, email, middleware, and schemas
 - **Optimized Import Paths**: Accurate import path generation for all component types
@@ -59,7 +59,7 @@ Then add to your MCP configuration:
 }
 ```
 
-### For Development
+### For Local Development
 
 1. Clone this repository
 2. Install dependencies:
@@ -83,6 +83,7 @@ Then add to your MCP configuration:
 - `get_component_metadata` - Get detailed component information
 - `search_components` - Search components by name/description
 - `install_components` - Generate installation commands
+- `get_items` — List all registry items (including themes, blocks, etc.)
 
 ### Code Generation
 
@@ -95,13 +96,15 @@ Then add to your MCP configuration:
 - `init_axions_project` - Initialize new projects
 - `get_styles` - List available style variants
 - `apply_theme` - Generate theme configurations
+- `get_themes` - List all available themes
+- `get_theme_details` - Get detailed information about a specific theme
 
 ## Configuration
 
-The MCP server connects to your AxionsJS registry. Set the registry URL via environment variable:
+The MCP server connects to your AxionJS registry. Set the registry URL via environment variable:
 
 ```bash
-export AXIONS_REGISTRY_URL=https://your-registry.com
+AXIONJS_REGISTRY_URL=https://www.axionjs.com/
 ```
 
 Default: `http://localhost:3000`
@@ -117,12 +120,49 @@ Add to your `claude_desktop_config.json`:
       "command": "npx",
       "args": ["-y", "axionsjs-mcp-server@latest"],
       "env": {
-        "AXIONS_REGISTRY_URL": "https://your-registry.com"
+        "AXIONJS_REGISTRY_URL": "https://www.axionjs.com/"
       }
     }
   }
 }
 ```
+
+## APPDATA variable setting
+
+### Why manage APPDATA?
+
+Some Node.js tools, libraries, rely on APPDATA for storing or reading config/cache.
+
+On Windows, APPDATA is usually set by the OS, but in some CI/CD, Docker, or cross-platform environments, it may be missing or need to be set explicitly.
+
+if you happen to face issue relevant to APPDATA variable not found, add the following environment variable to your configuration
+
+Example (in Claude Desktop or MCP config):
+
+```json
+{
+  "mcpServers": {
+    "axionsjs-mcp-server": {
+      "command": "npx",
+      "args": ["-y", "axionsjs-mcp-server@latest"],
+      "env": {
+        "AXIONJS_REGISTRY_URL": "https://www.axionjs.com/",
+        "APPDATA": "C:\\Users\\YourUser\\AppData\\Roaming"
+      }
+    }
+  }
+}
+```
+
+#### How to find your APPDATA path (Windows)
+
+Open Command Prompt and run:
+
+```cmd
+echo %APPDATA%
+```
+
+This will print the path you can use in your configuration file using the format used in above example.
 
 ### Other MCP Clients
 
@@ -151,13 +191,13 @@ node dist/mcp/server.js
 
 # Test as installed package
 npm pack
-npm install -g axionsjs-mcp-1.0.0.tgz
+npm install -g axionsjs-mcp-2.1.1.tgz
 axionsjs-mcp
 ```
 
 ## Registry Structure
 
-The server expects your AxionsJS registry to provide:
+The server expects your AxionJS registry to provide:
 
 - `/registry.json` - Main component index
 - `/r/styles/[style]/[component].json` - Individual components
@@ -172,6 +212,11 @@ The server expects your AxionsJS registry to provide:
 4. Build and test: `npm run build:mcp`
 5. Submit a pull request
 
-## License
+## 📄 License
 
-MIT 4. Test with your AxionsJS library 5. Submit a pull request
+[MIT License](LICENSE)
+
+## 💬 Support
+
+- [GitHub Issues](https://github.com/axionjs/axionsjs-mcp-server/issues)
+- [NPM Package](https://www.npmjs.com/package/axionsjs-mcp-server)

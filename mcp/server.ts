@@ -34,8 +34,8 @@ import {
 
 export const server = new Server(
   {
-    name: "axionsjs-mcp",
-    version: "1.0.0",
+    name: "axionjs-mcp",
+    version: "1.0.1",
   },
   {
     capabilities: {
@@ -50,7 +50,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "init_axions_project",
-        description: "Initialize a new project with AxionsJS components",
+        description: "Initialize a new project with AxionJS components",
         inputSchema: zodToJsonSchema(
           z.object({
             style: z
@@ -66,12 +66,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "get_items",
-        description: "Get items from the AxionsJS registry",
+        description: "Get items from the AxionJS registry",
         inputSchema: zodToJsonSchema(z.object({})),
       },
       {
         name: "get_component_list",
-        description: "Get list of all available AxionsJS components",
+        description: "Get list of all available AxionJS components",
         inputSchema: zodToJsonSchema(
           z.object({
             category: z.string().optional().describe("Filter by category"),
@@ -189,7 +189,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "apply_theme",
-        description: "Generate theme configuration for AxionsJS",
+        description: "Generate theme configuration for AxionJS",
         inputSchema: zodToJsonSchema(
           z.object({
             theme: z.string().describe("Theme name"),
@@ -247,7 +247,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "fetch_ui_components",
-        description: "Fetch all UI components from AxionsJS registry",
+        description: "Fetch all UI components from AxionJS registry",
         inputSchema: zodToJsonSchema(z.object({})),
       },
       {
@@ -261,7 +261,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "fetch_example_components",
-        description: "Fetch all example components from AxionsJS registry",
+        description: "Fetch all example components from AxionJS registry",
         inputSchema: zodToJsonSchema(z.object({})),
       },
       {
@@ -310,10 +310,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { style = "new-york", includeTheme = true } = request.params
           .arguments as any;
 
-        let initText = `To initialize a new project with AxionsJS, run:
+        let initText = `To initialize a new project with AxionJS, run:
 
 \`\`\`bash
-npx axionjs init
+npx axionjs-ui init
 \`\`\`
 
 This will:
@@ -328,7 +328,7 @@ This will:
 
 To use a specific style:
 \`\`\`bash
-npx axionjs init --style ${style}
+npx axionjs-ui init --style ${style}
 \`\`\``;
         }
 
@@ -428,7 +428,7 @@ npx axionjs init --style ${style}
           content: [
             {
               type: "text",
-              text: `Available AxionsJS Components:\n\n${componentList}\n\nTo install any component:\n\`\`\`bash\nnpx axionjs add [component-name]\n\`\`\``,
+              text: `Available AxionJS Components:\n\n${componentList}\n\nTo install any component:\n\`\`\`bash\nnpx axionjs-ui add [component-name]\n\`\`\``,
             },
           ],
         };
@@ -450,7 +450,7 @@ npx axionjs init --style ${style}
 **Type:** ${metadata.item.type}
 **Description:** ${metadata.item.description || "No description"}
 **Version:** ${metadata.item.version || "Latest"}
-**Author:** ${metadata.item.author || "AxionsJS Team"}
+**Author:** ${metadata.item.author || "AxionJS Team"}
 
 ## Dependencies
 ${
@@ -471,7 +471,7 @@ Total files: ${metadata.totalFiles}
 
 ## Installation
 \`\`\`bash
-npx axionjs add ${name}
+npx axionjs-ui add ${name}
 \`\`\`
 
 ## Categories
@@ -670,7 +670,7 @@ ${result.installCommands.join("\n")}
           content: [
             {
               type: "text",
-              text: `Available AxionsJS Styles:\n\n${stylesList}\n\nTo use a specific style:\n\`\`\`bash\nnpx axionjs add [component] --style [style-name]\n\`\`\``,
+              text: `Available AxionJS Styles:\n\n${stylesList}\n\nTo use a specific style:\n\`\`\`bash\nnpx axionjs-ui add [component] --style [style-name]\n\`\`\``,
             },
           ],
         };
@@ -679,7 +679,7 @@ ${result.installCommands.join("\n")}
       case "apply_theme": {
         const { theme, customColors } = request.params.arguments as any;
 
-        let themeConfig = `// AxionsJS Theme Configuration
+        let themeConfig = `// AxionJS Theme Configuration
 export const theme = {
   name: "${theme}",
   colors: {`;
@@ -718,7 +718,7 @@ module.exports = {
           content: [
             {
               type: "text",
-              text: `Available AxionsJS Registry Types:
+              text: `Available AxionJS Registry Types:
 
 - **ui**: UI components like buttons, cards, inputs
 - **blocks**: Larger pre-built blocks like heroes, features, testimonials
@@ -733,13 +733,13 @@ module.exports = {
 
 To get components from a specific registry:
 \`\`\`bash
-npx axionjs add [component-name]
+npx axionjs-ui add [component-name]
 \`\`\`
 Example:
 \`\`\`bash
-npx axionjs add blocks hero-section
-npx axionjs add auth login-form
-npx axionjs add charts line-chart
+npx axionjs-ui add hero-section
+npx axionjs-ui add simple-auth login-form
+npx axionjs-ui add line-chart
 \`\`\`
 `,
             },
@@ -802,7 +802,7 @@ npx axionjs add charts line-chart
           content: [
             {
               type: "text",
-              text: `Available AxionsJS Themes:\n\n${themesList}\n\nTo use a specific theme:\n\`\`\`bash\nnpx axionjs add --theme [theme-name]\n\`\`\``,
+              text: `Available AxionJS Themes:\n\n${themesList}\n\nTo use a specific theme:\n\`\`\`bash\nnpx axionjs-ui add --theme [theme-name]\n\`\`\``,
             },
           ],
         };
@@ -857,7 +857,7 @@ npx axionjs add charts line-chart
 To apply this theme to your project:
 
 \`\`\`bash
-npx axionjs add --theme ${theme.name}
+npx axionjs-ui add --theme ${theme.name}
 \`\`\`
 
 Or add it to your tailwind.config.js:
@@ -901,7 +901,7 @@ module.exports = {
           content: [
             {
               type: "text",
-              text: `Available AxionsJS Dynamic Components:\n\n${componentsList}\n\nTo use a specific dynamic component:\n\`\`\`bash\nnpx axionjs add dynamic-components [component-name]\n\`\`\``,
+              text: `Available AxionJS Dynamic Components:\n\n${componentsList}\n\nTo use a specific dynamic component:\n\`\`\`bash\nnpx axionjs-ui add [component-name]\n\`\`\``,
             },
           ],
         };
@@ -959,7 +959,7 @@ ${
 ## Installation
 
 \`\`\`bash
-npx axionjs add dynamic-components ${component.name}
+npx axionjs-ui add ${component.name}
 \`\`\`
 `;
 
@@ -979,7 +979,9 @@ npx axionjs add dynamic-components ${component.name}
                 text: `Found ${components.length} UI components:\n\n${components
                   .map(
                     (comp) =>
-                      `**${comp.name}** (${comp.type})\n${comp.description || "No description"}`
+                      `**${comp.name}** (${comp.type})\n${
+                        comp.description || "No description"
+                      }`
                   )
                   .join("\n\n")}`,
               },
@@ -990,7 +992,9 @@ npx axionjs add dynamic-components ${component.name}
             content: [
               {
                 type: "text",
-                text: `Error fetching UI components: ${error instanceof Error ? error.message : "Unknown error"}`,
+                text: `Error fetching UI components: ${
+                  error instanceof Error ? error.message : "Unknown error"
+                }`,
               },
             ],
           };
@@ -1006,7 +1010,7 @@ npx axionjs add dynamic-components ${component.name}
               content: [
                 {
                   type: "text",
-                  text: `Component "${name}" not found in AxionsJS registry.`,
+                  text: `Component "${name}" not found in AxionJS registry.`,
                 },
               ],
             };
@@ -1018,16 +1022,22 @@ npx axionjs add dynamic-components ${component.name}
             detailsText += `**Description:** ${component.description}\n`;
           }
           if (component.dependencies?.length) {
-            detailsText += `**Dependencies:** ${component.dependencies.join(", ")}\n`;
+            detailsText += `**Dependencies:** ${component.dependencies.join(
+              ", "
+            )}\n`;
           }
           if (component.registryDependencies?.length) {
-            detailsText += `**Registry Dependencies:** ${component.registryDependencies.join(", ")}\n`;
+            detailsText += `**Registry Dependencies:** ${component.registryDependencies.join(
+              ", "
+            )}\n`;
           }
           if (component.files?.length) {
             detailsText += `**Files:** ${component.files.length} file(s)\n`;
           }
           if (component.categories?.length) {
-            detailsText += `**Categories:** ${component.categories.join(", ")}\n`;
+            detailsText += `**Categories:** ${component.categories.join(
+              ", "
+            )}\n`;
           }
           if (component.tags?.length) {
             detailsText += `**Tags:** ${component.tags.join(", ")}\n`;
@@ -1041,7 +1051,9 @@ npx axionjs add dynamic-components ${component.name}
             content: [
               {
                 type: "text",
-                text: `Error fetching component details: ${error instanceof Error ? error.message : "Unknown error"}`,
+                text: `Error fetching component details: ${
+                  error instanceof Error ? error.message : "Unknown error"
+                }`,
               },
             ],
           };
@@ -1055,12 +1067,18 @@ npx axionjs add dynamic-components ${component.name}
             content: [
               {
                 type: "text",
-                text: `Found ${examples.length} example components:\n\n${examples
+                text: `Found ${
+                  examples.length
+                } example components:\n\n${examples
                   .map(
                     (example) =>
-                      `**${example.name}** (${example.type})\n${example.description || "No description"}${
+                      `**${example.name}** (${example.type})\n${
+                        example.description || "No description"
+                      }${
                         example.registryDependencies?.length
-                          ? `\nDependencies: ${example.registryDependencies.join(", ")}`
+                          ? `\nDependencies: ${example.registryDependencies.join(
+                              ", "
+                            )}`
                           : ""
                       }`
                   )
@@ -1073,7 +1091,9 @@ npx axionjs add dynamic-components ${component.name}
             content: [
               {
                 type: "text",
-                text: `Error fetching example components: ${error instanceof Error ? error.message : "Unknown error"}`,
+                text: `Error fetching example components: ${
+                  error instanceof Error ? error.message : "Unknown error"
+                }`,
               },
             ],
           };
@@ -1089,7 +1109,7 @@ npx axionjs add dynamic-components ${component.name}
               content: [
                 {
                   type: "text",
-                  text: `Example "${name}" not found in AxionsJS registry.`,
+                  text: `Example "${name}" not found in AxionJS registry.`,
                 },
               ],
             };
@@ -1101,10 +1121,14 @@ npx axionjs add dynamic-components ${component.name}
             detailsText += `**Description:** ${example.description}\n`;
           }
           if (example.registryDependencies?.length) {
-            detailsText += `**Registry Dependencies:** ${example.registryDependencies.join(", ")}\n`;
+            detailsText += `**Registry Dependencies:** ${example.registryDependencies.join(
+              ", "
+            )}\n`;
           }
           if (example.dependencies?.length) {
-            detailsText += `**NPM Dependencies:** ${example.dependencies.join(", ")}\n`;
+            detailsText += `**NPM Dependencies:** ${example.dependencies.join(
+              ", "
+            )}\n`;
           }
           if (example.files?.length) {
             detailsText += `**Files:** ${example.files.length} file(s)\n`;
@@ -1118,7 +1142,9 @@ npx axionjs add dynamic-components ${component.name}
             content: [
               {
                 type: "text",
-                text: `Error fetching example details: ${error instanceof Error ? error.message : "Unknown error"}`,
+                text: `Error fetching example details: ${
+                  error instanceof Error ? error.message : "Unknown error"
+                }`,
               },
             ],
           };
@@ -1133,10 +1159,14 @@ npx axionjs add dynamic-components ${component.name}
             content: [
               {
                 type: "text",
-                text: `Found ${components.length} components of type "${type}":\n\n${components
+                text: `Found ${
+                  components.length
+                } components of type "${type}":\n\n${components
                   .map(
                     (comp) =>
-                      `**${comp.name}**\n${comp.description || "No description"}${
+                      `**${comp.name}**\n${
+                        comp.description || "No description"
+                      }${
                         comp.dependencies?.length
                           ? `\nDependencies: ${comp.dependencies.join(", ")}`
                           : ""
@@ -1151,7 +1181,9 @@ npx axionjs add dynamic-components ${component.name}
             content: [
               {
                 type: "text",
-                text: `Error fetching components by type: ${error instanceof Error ? error.message : "Unknown error"}`,
+                text: `Error fetching components by type: ${
+                  error instanceof Error ? error.message : "Unknown error"
+                }`,
               },
             ],
           };
@@ -1167,7 +1199,7 @@ npx axionjs add dynamic-components ${component.name}
               content: [
                 {
                   type: "text",
-                  text: `Component "${name}" not found in AxionsJS registry.`,
+                  text: `Component "${name}" not found in AxionJS registry.`,
                 },
               ],
             };
@@ -1180,16 +1212,20 @@ npx axionjs add dynamic-components ${component.name}
             detailsText += `**Description:** ${component.description}\n`;
           }
           if (component.dependencies?.length) {
-            detailsText += `**Dependencies:** ${component.dependencies.join(", ")}\n`;
+            detailsText += `**Dependencies:** ${component.dependencies.join(
+              ", "
+            )}\n`;
           }
           if (component.registryDependencies?.length) {
-            detailsText += `**Registry Dependencies:** ${component.registryDependencies.join(", ")}\n`;
+            detailsText += `**Registry Dependencies:** ${component.registryDependencies.join(
+              ", "
+            )}\n`;
           }
           if (component.files?.length) {
             detailsText += `**Files:** ${component.files.length} file(s)\n`;
           }
 
-          const installCommand = `npx axionjs add ${name}`;
+          const installCommand = `npx axionjs-ui add ${name}`;
           detailsText += `\n**Installation:**\n\`\`\`bash\n${installCommand}\n\`\`\``;
 
           return {
@@ -1200,7 +1236,9 @@ npx axionjs add dynamic-components ${component.name}
             content: [
               {
                 type: "text",
-                text: `Error finding component: ${error instanceof Error ? error.message : "Unknown error"}`,
+                text: `Error finding component: ${
+                  error instanceof Error ? error.message : "Unknown error"
+                }`,
               },
             ],
           };
@@ -1232,7 +1270,7 @@ npx axionjs add dynamic-components ${component.name}
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("AxionsJS MCP Server running...");
+  console.error("AxionJS MCP Server running...");
 }
 
 main().catch((error) => {

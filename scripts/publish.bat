@@ -1,5 +1,5 @@
 @echo off
-echo 🚀 Publishing AxionsJS MCP to NPM...
+echo 🚀 Publishing AxionJS MCP to NPM...
 echo.
 
 REM Check if logged in to npm

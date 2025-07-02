@@ -198,7 +198,7 @@ export function ThemeProvider({ children }) {
   return {
     code,
     dependencies: [],
-    installCommand: `npx axionjs add --theme ${theme.name}`,
+    installCommand: `npx axionjs-ui add --theme ${theme.name}`,
     usage,
   };
 }
@@ -261,7 +261,7 @@ export default function MyPage() {
   return {
     code,
     dependencies: component.dependencies || [],
-    installCommand: `npx axionjs add --registry dynamic-components ${component.name}`,
+    installCommand: `npx axionjs-ui add --registry dynamic-components ${component.name}`,
     usage,
   };
 }
@@ -290,8 +290,9 @@ export async function generatePageWithComponents(
 
     // Resolve all components
     for (const componentName of components) {
-      const { component, registryType } =
-        await findComponentByName(componentName);
+      const { component, registryType } = await findComponentByName(
+        componentName
+      );
       if (component && registryType) {
         // Convert string to RegistryTypeString
         const typedRegistryType = registryType as RegistryTypeString;
@@ -503,7 +504,7 @@ export default function Landing() {
     <div className="min-h-screen">
       <section className="hero py-20">
         <div className="container mx-auto text-center">
-          <h1 className="text-5xl font-bold mb-6">Welcome to AxionsJS</h1>
+          <h1 className="text-5xl font-bold mb-6">Welcome to AxionJS</h1>
           <p className="text-xl mb-8">Beautiful components for modern web applications</p>
           ${components}
         </div>
@@ -540,7 +541,7 @@ ${template(componentUsage)}`;
 }
 
 function getPageDescription(pageType: string, components: string[]): string {
-  return `Generated ${pageType} page using AxionsJS components: ${components.join(
+  return `Generated ${pageType} page using AxionJS components: ${components.join(
     ", "
   )}`;
 }
