@@ -1,329 +1,436 @@
+import { z } from "zod";
 import fetch from "node-fetch";
-import {
-  axionsRegistryItemSchema,
-  axionsRegistryIndexSchema,
-  axionsStylesSchema,
-} from "./types.js";
-const AXIONJS_REGISTRY_URL =
-  process.env.AXIONJS_REGISTRY_URL || "http://localhost:3000";
+import { axionsRegistryItemSchema, axionsRegistryIndexSchema, axionsStylesSchema, } from "./types.js";
+// Use environment variable for AxionsJS registry URL
+const AXIONJS_REGISTRY_URL = process.env.AXIONJS_REGISTRY_URL || "http://localhost:3001";
+// Cache for registry data
 const registryCache = new Map();
-// List of all registry types to check
+// Define component and example schemas similar to MagicUI
+export const ComponentSchema = z.object({
+    name: z.string(),
+    type: z.string(),
+    description: z.string().optional(),
+});
+export const ComponentDetailSchema = axionsRegistryItemSchema;
+export const ExampleComponentSchema = z.object({
+    name: z.string(),
+    type: z.string(),
+    description: z.string().optional(),
+    registryDependencies: z.array(z.string()).optional(),
+});
+export const ExampleDetailSchema = axionsRegistryItemSchema;
+// List of all registry types based on actual registry.json structure
 const REGISTRY_TYPES = [
-  "ui",
-  "hooks",
-  "blocks",
-  "auth",
-  "charts",
-  "dynamic-components",
-  "icons",
-  "lib",
-  "styles",
-  "themes",
+    "ui",
+    "theme",
+    "hook",
+    "block",
+    "dynamic-component",
+    "lib",
+    "component",
+    "page",
+    "file",
+    "actions",
+    "api",
+    "auth_comp",
+    "email",
+    "middleware",
+    "schemas",
 ];
-export async function getAxionsRegistryIndex() {
-  try {
-    const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch registry index: ${response.statusText}`);
-    }
-    const data = await response.json();
-    return axionsRegistryIndexSchema.parse(data);
-  } catch (error) {
-    console.error("Error fetching registry index:", error);
-    return null;
-  }
-}
-export async function getAxionsRegistryStyles() {
-  try {
-    const response = await fetch(`${AXIONJS_REGISTRY_URL}/r/styles/index.json`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch styles: ${response.statusText}`);
-    }
-    const data = await response.json();
-    return axionsStylesSchema.parse(data);
-  } catch (error) {
-    console.error("Error fetching registry styles:", error);
-    return [];
-  }
-}
-export async function getAxionsRegistryThemes() {
-  try {
-    const response = await fetch(`${AXIONJS_REGISTRY_URL}/r/themes/index.json`);
-    if (!response.ok) {
-      // Try alternative path
-      const altResponse = await fetch(
-        `${AXIONJS_REGISTRY_URL}/r/registry-themes.json`
-      );
-      if (!altResponse.ok) {
-        throw new Error(`Failed to fetch themes: ${response.statusText}`);
-      }
-      const rawData = await altResponse.json();
-      // Parse the data through the schema to ensure it's the right type
-      return Array.isArray(rawData)
-        ? rawData.map((item) => axionsRegistryItemSchema.parse(item))
-        : [];
-    }
-    const rawData = await response.json();
-    // Parse the data through the schema to ensure it's the right type
-    return Array.isArray(rawData)
-      ? rawData.map((item) => axionsRegistryItemSchema.parse(item))
-      : [];
-  } catch (error) {
-    console.error("Error fetching registry themes:", error);
-    return [];
-  }
-}
-export async function getAxionsRegistryDynamicComponents() {
-  try {
-    const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
-    if (!response.ok) {
-      // Try alternative path
-      const altResponse = await fetch(
-        `${AXIONJS_REGISTRY_URL}/r/styles/new-york/index.json`
-      );
-      if (!altResponse.ok) {
-        throw new Error(
-          `Failed to fetch dynamic components: ${response.statusText}`
-        );
-      }
-      const rawData = await altResponse.json();
-      // Parse the data through the schema to ensure it's the right type
-      return Array.isArray(rawData)
-        ? rawData.map((item) => axionsRegistryItemSchema.parse(item))
-        : [];
-    }
-    const rawData = await response.json();
-    // Parse the data through the schema to ensure it's the right type
-    return Array.isArray(rawData)
-      ? rawData.map((item) => axionsRegistryItemSchema.parse(item))
-      : [];
-  } catch (error) {
-    console.error("Error fetching registry dynamic components:", error);
-    return [];
-  }
-}
-export async function getAxionsRegistryItem(name, style = "new-york") {
-  try {
-    const url = `${AXIONJS_REGISTRY_URL}/r/styles/${style}/${name}.json`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Component '${name}' not found in style '${style}'`);
-    }
-    const data = await response.json();
-    return axionsRegistryItemSchema.parse(data);
-  } catch (error) {
-    console.error(`Error fetching registry item ${name}:`, error);
-    return null;
-  }
-}
-export async function getAxionsComponentsByCategory(category) {
-  const index = await getAxionsRegistryIndex();
-  if (!index) return [];
-  if (!category) return index.items;
-  return index.items.filter(
-    (item) =>
-      item.categories?.includes(category) || item.type.includes(category)
-  );
-}
-export async function searchAxionsComponents(query) {
-  const index = await getAxionsRegistryIndex();
-  if (!index) return [];
-  const searchTerm = query.toLowerCase();
-  return index.items.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm) ||
-      item.description?.toLowerCase().includes(searchTerm) ||
-      item.tags?.some((tag) => tag.toLowerCase().includes(searchTerm))
-  );
-}
-export async function getAxionsComponentMetadata(name) {
-  const item = await getAxionsRegistryItem(name);
-  if (!item) {
-    return {
-      item: null,
-      dependencies: [],
-      registryDependencies: [],
-      totalFiles: 0,
-    };
-  }
-  return {
-    item,
-    dependencies: item.dependencies || [],
-    registryDependencies: item.registryDependencies || [],
-    totalFiles: item.files?.length || 0,
-  };
-}
-export async function resolveAxionsComponentTree(names) {
-  const resolved = [];
-  const allDependencies = new Set();
-  const processedNames = new Set();
-  async function resolveComponent(name) {
-    if (processedNames.has(name)) return;
-    processedNames.add(name);
-    const item = await getAxionsRegistryItem(name);
-    if (!item) return;
-    resolved.push(item);
-    // Add npm dependencies
-    item.dependencies?.forEach((dep) => allDependencies.add(dep));
-    // Recursively resolve registry dependencies
-    if (item.registryDependencies) {
-      for (const dep of item.registryDependencies) {
-        await resolveComponent(dep);
-      }
-    }
-  }
-  for (const name of names) {
-    await resolveComponent(name);
-  }
-  const installCommand = `npx axionjs-ui add ${names.join(" ")}`;
-  return {
-    resolved,
-    dependencies: Array.from(allDependencies),
-    installCommand,
-  };
-}
-export function generateAxionsInstallCommand(components, options) {
-  let command = `npx axionjs-ui add ${components.join(" ")}`;
-  if (options?.overwrite) {
-    command += " --overwrite";
-  }
-  if (options?.path) {
-    command += ` --path ${options.path}`;
-  }
-  if (options?.style && options.style !== "new-york") {
-    command += ` --style ${options.style}`;
-  }
-  return command;
-}
-// New function to get all available components from all registry types
-export async function getAllAxionsComponents() {
-  const result = {};
-  try {
-    // Fetch all registry types in parallel
-    const promises = REGISTRY_TYPES.map(async (type) => {
-      try {
-        // Special handling for themes and dynamic-components
-        if (type === "themes") {
-          const themes = await getAxionsRegistryThemes();
-          return { type, data: themes };
-        } else if (type === "dynamic-components") {
-          const dynamicComponents = await getAxionsRegistryDynamicComponents();
-          return { type, data: dynamicComponents };
-        } else {
-          const response = await fetch(
-            `${AXIONJS_REGISTRY_URL}/r/registry-${type}.json`
-          );
-          if (response.ok) {
-            const rawData = await response.json();
-            // Parse the data through the schema to ensure it's the right type
-            const data = Array.isArray(rawData)
-              ? rawData
-                  .map((item) => {
-                    try {
-                      return axionsRegistryItemSchema.parse(item);
-                    } catch (e) {
-                      console.error(`Error parsing item in ${type}:`, e);
-                      return null;
-                    }
-                  })
-                  .filter(Boolean)
-              : [];
-            return { type, data };
-          }
-          return { type, data: [] };
-        }
-      } catch (error) {
-        console.error(`Error fetching registry type ${type}:`, error);
-        return { type, data: [] };
-      }
-    });
-    const results = await Promise.all(promises);
-    // Organize results by registry type
-    results.forEach(({ type, data }) => {
-      if (data && Array.isArray(data)) {
-        result[type] = data;
-      }
-    });
-    return result;
-  } catch (error) {
-    console.error("Error fetching all components:", error);
-    return {};
-  }
-}
-// Find a component by name across all registry types
-export async function findComponentByName(name) {
-  // First check themes
-  const themes = await getAxionsRegistryThemes();
-  const theme = themes.find((item) => item.name === name);
-  if (theme) {
-    return { component: theme, registryType: "themes" };
-  }
-  // Then check dynamic components
-  const dynamicComponents = await getAxionsRegistryDynamicComponents();
-  const dynamicComponent = dynamicComponents.find((item) => item.name === name);
-  if (dynamicComponent) {
-    return { component: dynamicComponent, registryType: "dynamic-components" };
-  }
-  // Check other registry types
-  for (const type of REGISTRY_TYPES.filter(
-    (t) => t !== "themes" && t !== "dynamic-components"
-  )) {
+// Function to fetch UI components from AxionsJS
+export async function fetchUIComponents() {
     try {
-      const response = await fetch(
-        `${AXIONJS_REGISTRY_URL}/r/registry-${type}.json`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          const component = data.find((item) => item.name === name);
-          if (component) {
-            return {
-              component: axionsRegistryItemSchema.parse(component),
-              registryType: type,
-            };
-          }
+        const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch registry.json: ${response.statusText} (Status: ${response.status})`);
         }
-      }
-    } catch (error) {
-      console.error(`Error searching for component ${name} in ${type}:`, error);
+        const data = await response.json();
+        const registryData = axionsRegistryIndexSchema.parse(data);
+        return registryData.items
+            .filter((item) => item.type === "registry:ui")
+            .map((item) => {
+            try {
+                return ComponentSchema.parse({
+                    name: item.name,
+                    type: item.type,
+                    description: item.description,
+                });
+            }
+            catch (parseError) {
+                return null;
+            }
+        })
+            .filter(Boolean);
     }
-  }
-  return { component: null, registryType: null };
+    catch (error) {
+        console.error("Error fetching AxionsJS UI components:", error);
+        return [];
+    }
+}
+// Function to fetch component with actual code content
+export async function fetchComponentWithCode(name, style = "new-york") {
+    try {
+        // First check if component exists in registry.json
+        const registryResponse = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
+        if (!registryResponse.ok) {
+            throw new Error(`Failed to fetch registry.json: ${registryResponse.statusText}`);
+        }
+        const registryData = await registryResponse.json();
+        const registry = axionsRegistryIndexSchema.parse(registryData);
+        // Find the component in registry
+        const componentMeta = registry.items.find((item) => item.name === name);
+        if (!componentMeta) {
+            console.warn(`Component ${name} not found in registry.json`);
+            return null;
+        }
+        // Try to fetch the actual component code from style-specific endpoint
+        try {
+            const codeResponse = await fetch(`${AXIONJS_REGISTRY_URL}/r/styles/${style}/${name}.json`);
+            if (codeResponse.ok) {
+                const codeData = await codeResponse.json();
+                const componentWithCode = axionsRegistryItemSchema.parse(codeData);
+                // Merge metadata from registry.json with code from style endpoint
+                return {
+                    ...componentMeta,
+                    ...componentWithCode,
+                    // Ensure we have both metadata and code
+                    files: componentWithCode.files || componentMeta.files,
+                };
+            }
+            else {
+                console.warn(`Style-specific component endpoint not available: /r/styles/${style}/${name}.json`);
+            }
+        }
+        catch (codeError) {
+            console.warn(`Failed to fetch component code from style endpoint:`, codeError.message || codeError);
+        }
+        // Try alternative endpoint format: /r/{name}.json
+        try {
+            const altResponse = await fetch(`${AXIONJS_REGISTRY_URL}/r/${name}.json`);
+            if (altResponse.ok) {
+                const altData = await altResponse.json();
+                const componentWithCode = axionsRegistryItemSchema.parse(altData);
+                return {
+                    ...componentMeta,
+                    ...componentWithCode,
+                    files: componentWithCode.files || componentMeta.files,
+                };
+            }
+        }
+        catch (altError) {
+            console.warn(`Alternative component endpoint not available: /r/${name}.json`);
+        }
+        // If no code endpoints work, return metadata from registry.json
+        // This ensures the function always returns the component metadata even if code fetching fails
+        console.warn(`Returning component metadata only for ${name} (code endpoints unavailable)`);
+        return componentMeta;
+    }
+    catch (error) {
+        console.error(`Error fetching component ${name} with code:`, error);
+        return null;
+    }
+}
+// Function to fetch individual component details (updated to use code endpoint)
+export async function fetchComponentDetails(name, style = "new-york") {
+    return fetchComponentWithCode(name, style);
+}
+// Function to fetch example components
+export async function fetchExampleComponents() {
+    try {
+        const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch registry.json: ${response.statusText}`);
+        }
+        const data = await response.json();
+        const registryData = axionsRegistryIndexSchema.parse(data);
+        return registryData.items
+            .filter((item) => item.type === "registry:block") // Blocks can serve as examples
+            .map((item) => {
+            return ExampleComponentSchema.parse({
+                name: item.name,
+                type: item.type,
+                description: item.description,
+                registryDependencies: item.registryDependencies,
+            });
+        });
+    }
+    catch (error) {
+        console.error("Error fetching AxionJS example components:", error);
+        return [];
+    }
+}
+// Function to fetch details for a specific example
+export async function fetchExampleDetails(exampleName) {
+    try {
+        const response = await fetch(`${AXIONJS_REGISTRY_URL}/r/${exampleName}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch example details for ${exampleName}: ${response.statusText}`);
+        }
+        const data = await response.json();
+        return ExampleDetailSchema.parse(data);
+    }
+    catch (error) {
+        console.error(`Error fetching example details for ${exampleName}:`, error);
+        return null;
+    }
+}
+// Function to get the main registry index
+export async function getAxionsRegistryIndex() {
+    try {
+        const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch registry index: ${response.statusText}`);
+        }
+        const data = await response.json();
+        return axionsRegistryIndexSchema.parse(data);
+    }
+    catch (error) {
+        console.error("Error fetching registry index:", error);
+        return null;
+    }
+}
+// Function to fetch components by type from registry.json
+export async function fetchComponentsByType(type) {
+    try {
+        const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch registry.json: ${response.statusText}`);
+        }
+        const data = await response.json();
+        const registryData = axionsRegistryIndexSchema.parse(data);
+        return registryData.items.filter((item) => item.type === `registry:${type}`);
+    }
+    catch (error) {
+        console.error(`Error fetching ${type} components:`, error);
+        return [];
+    }
+}
+// Function to fetch all available components grouped by type
+export async function getAllAxionsComponents() {
+    try {
+        const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch registry.json: ${response.statusText}`);
+        }
+        const data = await response.json();
+        const registryData = axionsRegistryIndexSchema.parse(data);
+        const result = {};
+        // Group items by their type (removing 'registry:' prefix)
+        registryData.items.forEach((item) => {
+            const type = item.type.replace("registry:", "");
+            if (!result[type]) {
+                result[type] = [];
+            }
+            result[type].push(item);
+        });
+        return result;
+    }
+    catch (error) {
+        console.error("Error fetching all components:", error);
+        return {};
+    }
+}
+// Function to find a component by name across all types
+export async function findComponentByName(name, fetchCode = false, style = "new-york") {
+    try {
+        const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch registry.json: ${response.statusText}`);
+        }
+        const data = await response.json();
+        const registryData = axionsRegistryIndexSchema.parse(data);
+        const componentMeta = registryData.items.find((item) => item.name === name);
+        if (componentMeta) {
+            const registryType = componentMeta.type.replace("registry:", "");
+            if (fetchCode) {
+                // Fetch the component with actual code content
+                const componentWithCode = await fetchComponentWithCode(name, style);
+                return { component: componentWithCode, registryType };
+            }
+            else {
+                // Return just metadata
+                return { component: componentMeta, registryType };
+            }
+        }
+        return { component: null, registryType: null };
+    }
+    catch (error) {
+        console.error(`Error searching for component ${name}:`, error);
+        return { component: null, registryType: null };
+    }
+}
+// Legacy function compatibility - get components by category
+export async function getAxionsComponentsByCategory(category) {
+    const index = await getAxionsRegistryIndex();
+    if (!index)
+        return [];
+    if (!category)
+        return index.items;
+    return index.items.filter((item) => item.categories?.includes(category) || item.type.includes(category));
+}
+// Legacy function compatibility - search components
+export async function searchAxionsComponents(query) {
+    const index = await getAxionsRegistryIndex();
+    if (!index)
+        return [];
+    const searchTerm = query.toLowerCase();
+    return index.items.filter((item) => item.name.toLowerCase().includes(searchTerm) ||
+        item.description?.toLowerCase().includes(searchTerm) ||
+        item.tags?.some((tag) => tag.toLowerCase().includes(searchTerm)));
+}
+// Legacy function compatibility - get component metadata
+export async function getAxionsComponentMetadata(name) {
+    const { component } = await findComponentByName(name);
+    if (!component) {
+        return {
+            item: null,
+            dependencies: [],
+            registryDependencies: [],
+            totalFiles: 0,
+        };
+    }
+    return {
+        item: component,
+        dependencies: component.dependencies || [],
+        registryDependencies: component.registryDependencies || [],
+        totalFiles: component.files?.length || 0,
+    };
+}
+// Legacy function compatibility - resolve component tree
+export async function resolveAxionsComponentTree(names, style = "new-york") {
+    const resolved = [];
+    const allDependencies = new Set();
+    const processedNames = new Set();
+    async function resolveComponent(name) {
+        if (processedNames.has(name))
+            return;
+        processedNames.add(name);
+        // Fetch component with code
+        const { component } = await findComponentByName(name, true, style);
+        if (!component)
+            return;
+        resolved.push(component);
+        // Add npm dependencies
+        component.dependencies?.forEach((dep) => allDependencies.add(dep));
+        // Recursively resolve registry dependencies (but without code for dependencies)
+        if (component.registryDependencies) {
+            for (const dep of component.registryDependencies) {
+                await resolveComponent(dep);
+            }
+        }
+    }
+    for (const name of names) {
+        await resolveComponent(name);
+    }
+    const installCommand = `npx axionjs-ui add ${names.join(" ")}`;
+    return {
+        resolved,
+        dependencies: Array.from(allDependencies),
+        installCommand,
+    };
+}
+// Legacy function compatibility - generate install command
+export function generateAxionsInstallCommand(components, options) {
+    let command = `npx axionjs-ui add ${components.join(" ")}`;
+    if (options?.overwrite) {
+        command += " --overwrite";
+    }
+    if (options?.path) {
+        command += ` --path ${options.path}`;
+    }
+    if (options?.style && options.style !== "new-york") {
+        command += ` --style ${options.style}`;
+    }
+    return command;
+}
+// Legacy function compatibility - get styles
+export async function getAxionsRegistryStyles() {
+    try {
+        // Try to get styles from the main registry
+        const response = await fetch(`${AXIONJS_REGISTRY_URL}/registry.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch styles: ${response.statusText}`);
+        }
+        const data = await response.json();
+        const registryData = axionsRegistryIndexSchema.parse(data);
+        // Since there are no specific style entries in the registry,
+        // return default styles or extract from themes if available
+        const styles = [
+            { name: "default", label: "Default" },
+            { name: "new-york", label: "New York" },
+        ];
+        return axionsStylesSchema.parse(styles);
+    }
+    catch (error) {
+        console.error("Error fetching registry styles:", error);
+        return [];
+    }
 }
 // Get import path for a component based on its registry type
 export function getComponentImportPath(name, registryType) {
-  switch (registryType) {
-    case "ui":
-      return `@/components/ui/${name}`;
-    case "blocks":
-      return `@/components/blocks/${name}`;
-    case "auth":
-      return `@/components/auth/${name}`;
-    case "charts":
-      return `@/components/charts/${name}`;
-    case "dynamic-components":
-      return `@/components/dynamic/${name}`;
-    case "hooks":
-      return `@/hooks/${name}`;
-    case "icons":
-      return `@/components/icons/${name}`;
-    case "lib":
-      return `@/lib/${name}`;
-    case "themes":
-      return `@/themes/${name}`;
-    default:
-      return `@/components/${registryType}/${name}`;
-  }
+    switch (registryType) {
+        case "ui":
+            return `@/components/ui/${name}`;
+        case "block":
+            return `@/components/blocks/${name}`;
+        case "auth_comp":
+            return `@/components/auth/${name}`;
+        case "component":
+            return `@/components/${name}`;
+        case "dynamic-component":
+            return `@/components/dynamic/${name}`;
+        case "hook":
+            return `@/hooks/${name}`;
+        case "lib":
+            return `@/lib/${name}`;
+        case "theme":
+            return `@/themes/${name}`;
+        case "page":
+            return `@/app/${name}`;
+        case "file":
+            return `@/${name}`;
+        case "actions":
+            return `@/actions/${name}`;
+        case "api":
+            return `@/api/${name}`;
+        case "email":
+            return `@/emails/${name}`;
+        case "middleware":
+            return `@/middleware/${name}`;
+        case "schemas":
+            return `@/schemas/${name}`;
+        default:
+            return `@/components/${registryType}/${name}`;
+    }
 }
-// Get theme by name
+// Backward compatibility functions
+export async function getAxionsRegistryThemes() {
+    return fetchComponentsByType("theme");
+}
+export async function getAxionsRegistryDynamicComponents() {
+    return fetchComponentsByType("dynamic-component");
+}
 export async function getAxionsThemeByName(name) {
-  const themes = await getAxionsRegistryThemes();
-  const theme = themes.find((item) => item.name === name);
-  return theme || null;
+    const { component, registryType } = await findComponentByName(name);
+    if (registryType === "theme") {
+        return component;
+    }
+    return null;
 }
-// Get dynamic component by name
 export async function getAxionsDynamicComponentByName(name) {
-  const dynamicComponents = await getAxionsRegistryDynamicComponents();
-  const component = dynamicComponents.find((item) => item.name === name);
-  return component || null;
+    const { component, registryType } = await findComponentByName(name);
+    if (registryType === "dynamic-component") {
+        return component;
+    }
+    return null;
+}
+export async function getAxionsRegistryItem(name, style = "new-york") {
+    try {
+        // Use the new fetchComponentWithCode function to get component with actual code
+        return await fetchComponentWithCode(name, style);
+    }
+    catch (error) {
+        console.error(`Error fetching registry item ${name}:`, error);
+        return null;
+    }
 }
